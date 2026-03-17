@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSMC Annual Revenue — 2026-03-17</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #FFF1E5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .chart-wrapper {
+      width: 900px;
+      background: #ffffff;
+      padding: 0 0 20px 0;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.10);
+    }
+
+    .chart-header {
+      padding: 24px 28px 0;
+    }
+
+    .rubric {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #990F3D;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      line-height: 1.2;
+      margin-bottom: 6px;
+      max-width: 640px;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: #4a4a4a;
+      line-height: 1.45;
+      max-width: 680px;
+      margin-bottom: 16px;
+    }
+
+    #chart {
+      width: 900px;
+    }
+
+    .axis text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11.5px;
+      fill: #4a4a4a;
+    }
+
+    .axis path,
+    .axis line {
+      stroke: #ccc;
+    }
+
+    .axis--y .domain { display: none; }
+    .axis--x .domain { stroke: #bbb; }
+    .axis--x .tick line { display: none; }
+
+    .gridline {
+      stroke: #e8e8e8;
+      stroke-width: 1;
+    }
+
+    .bar { cursor: pointer; }
+    .bar:hover { opacity: 0.82; }
+
+    .bar-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      text-anchor: middle;
+      fill: #555;
+    }
+
+    .bar-label.highlight { fill: #fff; }
+
+    .annotation-line {
+      stroke: #999;
+      stroke-width: 1;
+      stroke-dasharray: 3,3;
+    }
+
+    .annotation-box {
+      fill: #FFF1E5;
+      stroke: #ddd;
+      stroke-width: 1;
+      rx: 3;
+    }
+
+    .annotation-text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10.5px;
+      fill: #333;
+      text-anchor: middle;
+    }
+
+    .annotation-text.bold {
+      font-weight: 700;
+    }
+
+    .era-bracket {
+      fill: none;
+      stroke: #bbb;
+      stroke-width: 1.2;
+    }
+
+    .era-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      fill: #888;
+      text-anchor: middle;
+    }
+
+    .source-line {
+      padding: 6px 28px 0;
+      font-size: 10.5px;
+      color: #888;
+      border-top: 1px solid #e8e8e8;
+      margin-top: 4px;
+    }
+
+    .description {
+      padding: 12px 28px 6px;
+      font-size: 13px;
+      color: #444;
+      line-height: 1.55;
+      border-top: 1px solid #e8e8e8;
+      margin-top: 4px;
+      max-width: 860px;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: fixed;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 3px;
+      font-size: 12px;
+      line-height: 1.5;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+      max-width: 180px;
+    }
+    .tooltip .yr { font-weight: 700; font-size: 13px; }
+    .tooltip .rev { color: #FCD0B1; font-weight: 700; }
+    .tooltip .chg { font-size: 11px; color: #ccc; }
+  </style>
+</head>
+<body>
+
+<div class="chart-wrapper">
+  <div class="chart-header">
+    <div class="rubric">Taiwan · Semiconductors</div>
+    <div class="title">TSMC's revenue has more than quintupled since 2013, driven by the AI chip boom</div>
+    <div class="subtitle">Annual net revenue of Taiwan Semiconductor Manufacturing Company, US$bn</div>
+  </div>
+
+  <svg id="chart"></svg>
+
+  <div class="description">
+    TSMC is the exclusive manufacturer of the world's most advanced chips, making it perhaps the single most strategically important company in the global economy. Its revenue trajectory maps almost perfectly onto the AI investment supercycle: after a brief 4% dip in 2023 caused by a consumer-electronics glut, revenues surged 25% in 2024 and a further 32% in 2025, reaching a record $116bn. In February 2026, TSMC's market capitalisation crossed $2 trillion for the first time. Whether AI infrastructure spending can sustain this growth — or whether a second inventory correction looms — is the defining question for the global chip industry.
+  </div>
+  <div class="source-line">Source: TSMC Annual Reports, SEC Form 20-F filings, 2013–2025 &nbsp;|&nbsp; @enriqui</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  // ── Data ──────────────────────────────────────────────────────────────────
+  const data = [
+    { year: 2013, rev: 20.1 },
+    { year: 2014, rev: 26.2 },
+    { year: 2015, rev: 26.7 },
+    { year: 2016, rev: 29.3 },
+    { year: 2017, rev: 33.2 },
+    { year: 2018, rev: 34.2 },
+    { year: 2019, rev: 34.6 },
+    { year: 2020, rev: 45.5 },
+    { year: 2021, rev: 56.8 },
+    { year: 2022, rev: 73.7 },
+    { year: 2023, rev: 70.6 },
+    { year: 2024, rev: 88.3 },
+    { year: 2025, rev: 116.2 }
+  ];
+
+  // YoY pct change
+  data.forEach((d, i) => {
+    d.yoy = i === 0 ? null : +((d.rev / data[i-1].rev - 1) * 100).toFixed(1);
+  });
+
+  // ── Dimensions ────────────────────────────────────────────────────────────
+  const totalW = 900;
+  const margin = { top: 52, right: 30, bottom: 44, left: 66 };
+  const svgH   = 420;
+  const innerW = totalW - margin.left - margin.right;
+  const innerH = svgH - margin.top - margin.bottom;
+
+  const svg = d3.select('#chart')
+    .attr('width',  totalW)
+    .attr('height', svgH);
+
+  const g = svg.append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // ── Scales ────────────────────────────────────────────────────────────────
+  const x = d3.scaleBand()
+    .domain(data.map(d => d.year))
+    .range([0, innerW])
+    .padding(0.28);
+
+  const y = d3.scaleLinear()
+    .domain([0, 130])
+    .range([innerH, 0]);
+
+  // ── Colour function ───────────────────────────────────────────────────────
+  function barColor(d) {
+    if (d.year >= 2024) return '#990F3D';   // FT crimson — AI supercycle
+    if (d.year === 2023) return '#7d98b3';  // Muted — chip glut dip
+    if (d.year >= 2020) return '#0F5499';   // FT blue — COVID/5G surge
+    return '#6e9cc4';                        // Lighter blue — pre-2020
+  }
+
+  // ── Gridlines ─────────────────────────────────────────────────────────────
+  g.selectAll('.gridline')
+    .data(y.ticks(5))
+    .join('line')
+    .attr('class', 'gridline')
+    .attr('x1', 0).attr('x2', innerW)
+    .attr('y1', d => y(d)).attr('y2', d => y(d));
+
+  // ── Y axis ────────────────────────────────────────────────────────────────
+  g.append('g')
+    .attr('class', 'axis axis--y')
+    .call(
+      d3.axisLeft(y)
+        .ticks(5)
+        .tickFormat(d => d === 0 ? '0' : `$${d}bn`)
+        .tickSize(0)
+        .tickPadding(8)
+    );
+
+  // Y axis label
+  g.append('text')
+    .attr('x', -6)
+    .attr('y', -22)
+    .attr('text-anchor', 'start')
+    .attr('font-size', '10px')
+    .attr('fill', '#888')
+    .attr('font-family', 'Arial, Helvetica, sans-serif')
+    .text('US$bn');
+
+  // ── X axis ────────────────────────────────────────────────────────────────
+  g.append('g')
+    .attr('class', 'axis axis--x')
+    .attr('transform', `translate(0,${innerH})`)
+    .call(
+      d3.axisBottom(x)
+        .tickFormat(d => `'${String(d).slice(2)}`)
+        .tickSize(0)
+        .tickPadding(10)
+    );
+
+  // ── Bars ──────────────────────────────────────────────────────────────────
+  const bars = g.selectAll('.bar')
+    .data(data)
+    .join('rect')
+    .attr('class', 'bar')
+    .attr('x', d => x(d.year))
+    .attr('y', d => y(d.rev))
+    .attr('width', x.bandwidth())
+    .attr('height', d => innerH - y(d.rev))
+    .attr('fill', d => barColor(d));
+
+  // ── Bar value labels ──────────────────────────────────────────────────────
+  g.selectAll('.bar-label')
+    .data(data)
+    .join('text')
+    .attr('class', d => `bar-label${d.year >= 2024 ? ' highlight' : ''}`)
+    .attr('x', d => x(d.year) + x.bandwidth() / 2)
+    .attr('y', d => {
+      const barTop = y(d.rev);
+      // For 2024/2025 (crimson bars), put label inside near top
+      return d.year >= 2024 ? barTop + 13 : barTop - 5;
+    })
+    .text(d => {
+      if (d.rev >= 100) return `$${Math.round(d.rev)}`;
+      return `$${d.rev.toFixed(0)}`;
+    })
+    .attr('fill', d => d.year >= 2024 ? '#fff' : '#555');
+
+  // ── Annotations ───────────────────────────────────────────────────────────
+  // Helper: draw a small bracket + label above a range of bars
+  function drawBracket(years, labelLines, yOffset) {
+    const x1 = x(years[0]);
+    const x2 = x(years[years.length - 1]) + x.bandwidth();
+    const xMid = (x1 + x2) / 2;
+    const yB = yOffset;
+
+    // horizontal bar
+    g.append('line')
+      .attr('x1', x1 + 2).attr('x2', x2 - 2)
+      .attr('y1', yB).attr('y2', yB)
+      .attr('stroke', '#aaa').attr('stroke-width', 1);
+
+    // tick ends
+    [[x1+2, yB], [x2-2, yB]].forEach(([px, py]) => {
+      g.append('line')
+        .attr('x1', px).attr('x2', px)
+        .attr('y1', py).attr('y2', py + 5)
+        .attr('stroke', '#aaa').attr('stroke-width', 1);
+    });
+
+    // label
+    labelLines.forEach((line, i) => {
+      g.append('text')
+        .attr('x', xMid)
+        .attr('y', yB - 5 - (labelLines.length - 1 - i) * 13)
+        .attr('text-anchor', 'middle')
+        .attr('font-family', 'Arial, Helvetica, sans-serif')
+        .attr('font-size', i === 0 ? '10.5px' : '9.5px')
+        .attr('font-weight', i === 0 ? '700' : '400')
+        .attr('fill', '#555')
+        .text(line);
+    });
+  }
+
+  // Era labels below x-axis
+  function eraLabel(years, label) {
+    const x1 = x(years[0]);
+    const x2 = x(years[years.length - 1]) + x.bandwidth();
+    const xMid = (x1 + x2) / 2;
+    g.append('text')
+      .attr('x', xMid)
+      .attr('y', innerH + 36)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'Arial, Helvetica, sans-serif')
+      .attr('font-size', '9.5px')
+      .attr('fill', '#999')
+      .text(label);
+  }
+
+  // Chip glut annotation — dip arrow
+  const dip2023 = data.find(d => d.year === 2023);
+  const dipX = x(2023) + x.bandwidth() / 2;
+  const dipY = y(dip2023.rev) - 8;
+
+  // Arrow pointing down to 2023 bar
+  g.append('line')
+    .attr('x1', dipX).attr('x2', dipX)
+    .attr('y1', dipY - 28).attr('y2', dipY - 4)
+    .attr('stroke', '#999').attr('stroke-width', 1)
+    .attr('marker-end', 'url(#arrowhead)');
+
+  // Annotation text for 2023 dip
+  g.append('text')
+    .attr('x', dipX)
+    .attr('y', dipY - 43)
+    .attr('text-anchor', 'middle')
+    .attr('font-family', 'Arial, Helvetica, sans-serif')
+    .attr('font-size', '10px')
+    .attr('font-weight', '700')
+    .attr('fill', '#666')
+    .text('Chip glut dip');
+  g.append('text')
+    .attr('x', dipX)
+    .attr('y', dipY - 31)
+    .attr('text-anchor', 'middle')
+    .attr('font-family', 'Arial, Helvetica, sans-serif')
+    .attr('font-size', '9.5px')
+    .attr('fill', '#888')
+    .text('−4.2%');
+
+  // Define arrowhead marker
+  svg.append('defs').append('marker')
+    .attr('id', 'arrowhead')
+    .attr('markerWidth', 7).attr('markerHeight', 7)
+    .attr('refX', 3).attr('refY', 3.5)
+    .attr('orient', 'auto')
+    .append('polygon')
+    .attr('points', '0 0, 7 3.5, 0 7')
+    .attr('fill', '#999');
+
+  // COVID surge bracket (2020–2022)
+  const surgeYears = [2020, 2021, 2022];
+  const sx1 = x(2020);
+  const sx2 = x(2022) + x.bandwidth();
+  const sxMid = (sx1 + sx2) / 2;
+  const syB = y(80);
+
+  drawBracket(surgeYears, ['5G & COVID', 'demand surge'], syB);
+
+  // AI supercycle callout (2024–2025) — right-side label
+  const a2025 = data.find(d => d.year === 2025);
+  const ax = x(2025) + x.bandwidth() + 8;
+  const ay = y(a2025.rev) + (innerH - y(a2025.rev)) / 2;
+
+  g.append('line')
+    .attr('x1', ax - 4).attr('x2', ax + 22)
+    .attr('y1', ay).attr('y2', ay - 12)
+    .attr('stroke', '#990F3D').attr('stroke-width', 1);
+
+  g.append('text')
+    .attr('x', ax + 24)
+    .attr('y', ay - 20)
+    .attr('font-family', 'Arial, Helvetica, sans-serif')
+    .attr('font-size', '10px')
+    .attr('font-weight', '700')
+    .attr('fill', '#990F3D')
+    .text('AI');
+
+  g.append('text')
+    .attr('x', ax + 24)
+    .attr('y', ay - 9)
+    .attr('font-family', 'Arial, Helvetica, sans-serif')
+    .attr('font-size', '10px')
+    .attr('font-weight', '700')
+    .attr('fill', '#990F3D')
+    .text('era');
+
+  // ── Legend ────────────────────────────────────────────────────────────────
+  const legend = [
+    { color: '#6e9cc4', label: 'Pre-2020' },
+    { color: '#0F5499', label: '2020–2022 (5G/COVID surge)' },
+    { color: '#7d98b3', label: '2023 (chip glut)' },
+    { color: '#990F3D', label: '2024–2025 (AI supercycle)' },
+  ];
+
+  const lgX = innerW - 210;
+  const lgY = 6;
+
+  legend.forEach((item, i) => {
+    const ly = lgY + i * 15;
+    g.append('rect')
+      .attr('x', lgX).attr('y', ly - 8)
+      .attr('width', 10).attr('height', 10)
+      .attr('fill', item.color);
+    g.append('text')
+      .attr('x', lgX + 14).attr('y', ly)
+      .attr('font-family', 'Arial, Helvetica, sans-serif')
+      .attr('font-size', '10px')
+      .attr('fill', '#555')
+      .text(item.label);
+  });
+
+  // ── Tooltip ───────────────────────────────────────────────────────────────
+  const tooltip = document.getElementById('tooltip');
+
+  bars
+    .on('mousemove', (event, d) => {
+      const sign = d.yoy > 0 ? '+' : '';
+      const yoyStr = d.yoy !== null ? `${sign}${d.yoy}% YoY` : 'Baseline year';
+      tooltip.innerHTML = `
+        <div class="yr">${d.year}</div>
+        <div class="rev">$${d.rev.toFixed(1)} billion</div>
+        <div class="chg">${yoyStr}</div>
+      `;
+      tooltip.style.opacity = 1;
+      tooltip.style.left  = (event.clientX + 14) + 'px';
+      tooltip.style.top   = (event.clientY - 36) + 'px';
+    })
+    .on('mouseleave', () => {
+      tooltip.style.opacity = 0;
+    });
+
+</script>
+</body>
+</html>

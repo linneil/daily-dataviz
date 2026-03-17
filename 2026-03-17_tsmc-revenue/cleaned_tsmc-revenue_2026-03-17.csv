@@ -1,0 +1,14 @@
+year,revenue_usd_bn,yoy_pct_change,era,notes
+2013,20.1,,Pre-AI era,Confirmed – Statista / Macrotrends
+2014,26.2,30.3,Pre-AI era,Training data – Macrotrends / SEC 20-F
+2015,26.7,1.9,Pre-AI era,Training data – Macrotrends / SEC 20-F
+2016,29.3,9.7,Pre-AI era,Training data – Macrotrends / SEC 20-F
+2017,33.2,13.3,Pre-AI era,Training data – Macrotrends / SEC 20-F
+2018,34.2,3.0,Pre-AI era,Training data – Macrotrends / SEC 20-F
+2019,34.6,1.2,Pre-AI era,Confirmed – SEC filing reference
+2020,45.5,31.5,COVID/5G surge,Confirmed – SEC filing reference
+2021,56.8,24.8,COVID/5G surge,Training data – consistent with 25% YoY growth
+2022,73.7,29.8,COVID/5G surge,Confirmed – multiple news sources
+2023,70.6,-4.2,Chip glut dip,Confirmed – multiple news sources (chip glut dip)
+2024,88.3,25.1,AI supercycle,Confirmed – multiple news sources
+2025,116.2,31.6,AI supercycle,Confirmed – 31.6% YoY from TSMC Q4 2025 earnings
