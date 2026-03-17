@@ -21,7 +21,7 @@ Each morning at 08:00, Claude automatically:
 
 | Date | Topic | Data Source | Chart Type | Style | Link |
 |------|-------|-------------|------------|-------|------|
-| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | Economist | [View Live Demo](linneil.github.com/daily-dataviz/2026-03-17_iea-emergency-releases/index.html) |
+| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | Economist | [View Live Demo](./2026-03-17_iea-emergency-releases/index.html) |
 | 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | FT | [View](./daily-dataviz/2026-03-17_tsmc-revenue/index.html) |
 
 ### 2026-03-17 (②) — Why this chart?
