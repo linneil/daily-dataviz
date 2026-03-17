@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IEA Emergency Oil Releases — 2026-03-17</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .chart-wrapper {
+      width: 900px;
+      background: #FFFFFF;
+      padding: 0;
+      border-top: 3px solid #E3120B;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .chart-header {
+      padding: 22px 28px 0;
+    }
+
+    .rubric {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #E3120B;
+      margin-bottom: 7px;
+    }
+
+    .title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #111111;
+      line-height: 1.25;
+      margin-bottom: 5px;
+      max-width: 680px;
+    }
+
+    .subtitle {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: #444444;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .chart-area {
+      position: relative;
+      height: 460px;
+      padding: 0 28px 0 28px;
+    }
+
+    .source {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: #888888;
+      padding: 10px 28px 18px;
+      border-top: 0.5px solid #DDDDDD;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .description {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      color: #333333;
+      line-height: 1.65;
+      padding: 0 28px 20px;
+      border-top: 0.5px solid #EEEEEE;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <div class="rubric">Energy</div>
+      <div class="title">The IEA's record emergency release dwarfs all previous interventions</div>
+      <div class="subtitle">Oil made available at each of the six IEA collective actions since 1991, million barrels</div>
+    </div>
+
+    <div class="chart-area">
+      <canvas id="chart"></canvas>
+    </div>
+
+    <div class="description">
+      On February 28, 2026, US and Israeli air strikes on Iran triggered the most severe energy supply shock since Russia's 2022 invasion of Ukraine. Iran's retaliation disrupted the Strait of Hormuz — the chokepoint through which a fifth of the world's oil and liquefied natural gas flows — sending Brent crude surging to near $120 per barrel before settling around $92. On March 11, the International Energy Agency responded by unanimously authorising the release of 400 million barrels from its members' strategic reserves: the sixth collective action in the IEA's 52-year history, and by far the largest. The release exceeds the combined total of all five previous interventions — and comes as the IEA simultaneously cut its global oil demand forecast by more than 1 million barrels per day for March and April. Whether the record release can stabilise prices hinges on how long the Strait of Hormuz remains disrupted.
+    </div>
+
+    <div class="source">Sources: International Energy Agency press releases, 1991–2026 &nbsp;|&nbsp; @enriqui</div>
+  </div>
+
+  <script>
+    // ── DATA (compiled from IEA primary sources) ─────────────────────────
+    const labels = [
+      'Gulf War\n1991',
+      'Hurricane Katrina\n2005',
+      'Libya Civil War\n2011',
+      'Ukraine War (1st)\n2022',
+      'Ukraine War (2nd)\n2022',
+      'Iran War\n2026'
+    ];
+
+    // Barrels released (millions)
+    const values = [17.3, 60, 60, 61.7, 120, 400];
+
+    // Matching colors: grey for historical, red for 2026
+    const colors = [
+      '#CCCCCC',
+      '#CCCCCC',
+      '#CCCCCC',
+      '#CCCCCC',
+      '#CCCCCC',
+      '#E3120B'
+    ];
+
+    const hoverColors = [
+      '#AAAAAA',
+      '#AAAAAA',
+      '#AAAAAA',
+      '#AAAAAA',
+      '#AAAAAA',
+      '#C50E09'
+    ];
+
+    // ── INLINE LABEL PLUGIN ───────────────────────────────────────────────
+    const inlineLabelPlugin = {
+      id: 'inlineLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+        const meta = chart.getDatasetMeta(0);
+
+        meta.data.forEach((bar, i) => {
+          const value = values[i];
+          const xPos = x.getPixelForValue(value);
+          const yPos = bar.y;
+          const isHighlight = i === values.length - 1;
+
+          ctx.save();
+          ctx.font = isHighlight
+            ? 'bold 12px Arial, Helvetica, sans-serif'
+            : '11px Arial, Helvetica, sans-serif';
+          ctx.fillStyle = isHighlight ? '#E3120B' : '#666666';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+
+          const label = value === 400
+            ? `${value} mb — largest ever`
+            : `${value} mb`;
+
+          ctx.fillText(label, xPos + 6, yPos);
+          ctx.restore();
+        });
+      }
+    };
+
+    // ── ANNOTATION: vertical reference line at previous max ──────────────
+    const referenceLinePlugin = {
+      id: 'referenceLine',
+      afterDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+
+        // Dashed vertical line at 120 mb (previous record)
+        const prevMax = 120;
+        const xPos = x.getPixelForValue(prevMax);
+
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#AAAAAA';
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        ctx.moveTo(xPos, chart.chartArea.top);
+        ctx.lineTo(xPos, chart.chartArea.bottom);
+        ctx.stroke();
+        ctx.restore();
+
+        // Label above the line
+        ctx.save();
+        ctx.font = '9px Arial, Helvetica, sans-serif';
+        ctx.fillStyle = '#999999';
+        ctx.textAlign = 'center';
+        ctx.fillText('Previous record', xPos, chart.chartArea.top + 10);
+        ctx.fillText('(120 mb, 2022)', xPos, chart.chartArea.top + 21);
+        ctx.restore();
+      }
+    };
+
+    // ── CHART ─────────────────────────────────────────────────────────────
+    new Chart(document.getElementById('chart'), {
+      type: 'bar',
+      plugins: [inlineLabelPlugin, referenceLinePlugin],
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Barrels released (million)',
+          data: values,
+          backgroundColor: colors,
+          hoverBackgroundColor: hoverColors,
+          borderWidth: 0,
+          borderRadius: 1,
+          barThickness: 38,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: { right: 130 }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#ffffff',
+            borderColor: '#dddddd',
+            borderWidth: 0.5,
+            titleColor: '#111111',
+            bodyColor: '#444444',
+            titleFont: { family: 'Georgia, serif', size: 12, weight: 'bold' },
+            bodyFont: { family: 'Arial, sans-serif', size: 11 },
+            padding: 10,
+            callbacks: {
+              title: ctx => ctx[0].label.replace('\n', ' — '),
+              label: ctx => {
+                const v = ctx.parsed.x;
+                const trigger = [
+                  'Gulf War', 'Hurricane Katrina', 'Libya Civil War',
+                  'Ukraine War (1st)', 'Ukraine War (2nd)', 'Iran War'
+                ][ctx.dataIndex];
+                return ` ${v.toLocaleString()} million barrels released`;
+              },
+              afterLabel: ctx => {
+                const prices = [32, 67, 115, 97, 104, 72];
+                const p = prices[ctx.dataIndex];
+                return ` Brent before: ~$${p}/bbl`;
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            min: 0,
+            max: 450,
+            grid: {
+              color: 'rgba(0,0,0,0.06)',
+              lineWidth: 0.5,
+              drawTicks: false,
+            },
+            border: { display: false },
+            ticks: {
+              font: { family: 'Arial, sans-serif', size: 10 },
+              color: '#999999',
+              maxTicksLimit: 6,
+              callback: v => v === 0 ? '0' : `${v} mb`
+            }
+          },
+          y: {
+            grid: { display: false },
+            border: { display: false },
+            ticks: {
+              font: { family: 'Georgia, serif', size: 11 },
+              color: (ctx) => ctx.index === 5 ? '#111111' : '#555555',
+              padding: 8,
+              // render multi-line labels
+              callback: function(value, index) {
+                return labels[index].split('\n');
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

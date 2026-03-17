@@ -1,0 +1,13 @@
+year,release_date,trigger_event,barrels_released_mb,duration_days,brent_price_before_usd,notes,cumulative_released_mb,chart_label
+1991,1991-01-17,Gulf War,17.3,45.0,32.0,First ever IEA collective action. 33.75mb authorised; 17.3mb delivered over 45 days.,17.3,"1991
+Gulf War"
+2005,2005-09-02,Hurricane Katrina,60.0,30.0,67.0,Response to Gulf of Mexico refinery and pipeline disruption.,77.3,"2005
+Hurricane Katrina"
+2011,2011-06-23,Libya Civil War,60.0,30.0,115.0,Libya lost ~1.3mb/d; IEA released 60mb over 30 days.,137.3,"2011
+Libya Civil War"
+2022,2022-03-01,Ukraine War (1st),61.7,30.0,97.0,First release in response to Russia's invasion. Part of 182.7mb total.,199.0,"2022
+Ukraine War (1st)"
+2022,2022-04-07,Ukraine War (2nd),120.0,180.0,104.0,Largest single release at the time. 240mb authorised; 120mb from IEA members.,319.0,"2022
+Ukraine War (2nd)"
+2026,2026-03-11,Iran War,400.0,,72.0,Largest ever IEA collective action. Strait of Hormuz disruption. Brent peaked near $120/bbl.,719.0,"2026
+Iran War"
