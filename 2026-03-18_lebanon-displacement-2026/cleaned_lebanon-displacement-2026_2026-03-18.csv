@@ -1,0 +1,9 @@
+date,displaced_total,children_estimate,in_shelters,source,event_label,pct_of_population,days_since_conflict
+2026-02-28,0,0.0,0.0,Baseline — Operation Epic Fury begins,US-Israel strikes on Iran begin,0.0,0
+2026-03-02,96000,,0.0,UNHCR/OCHA,Israeli evacuation warnings issued across Lebanon,1.7,2
+2026-03-05,280000,,40000.0,IOM DTM Lebanon,,5.1,5
+2026-03-08,560000,,85000.0,Lebanon government displacement platform,"100,000 new registrations in a single day",10.2,8
+2026-03-09,667000,200000.0,96000.0,UNHCR / Lebanon government,700k in first 7 days,12.1,9
+2026-03-11,822000,300000.0,110000.0,UNHCR,,14.9,11
+2026-03-16,1000000,330000.0,128000.0,IOM,1 million milestone — 1 in 5 Lebanese,18.2,16
+2026-03-18,1049328,340000.0,135000.0,UNHCR/IOM latest,Latest figure (today),19.1,18

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lebanon Displacement 2026 — 2026-03-18</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 0;
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+
+    .chart-wrapper {
+      width: 900px;
+      background: #FFFFFF;
+      border-top: 3px solid #E3120B;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .chart-header { padding: 22px 28px 0; }
+
+    .rubric {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #E3120B;
+      margin-bottom: 7px;
+    }
+
+    .title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: #111111;
+      line-height: 1.25;
+      margin-bottom: 5px;
+      max-width: 700px;
+    }
+
+    .subtitle {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: #444444;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .chart-area {
+      padding: 0 28px;
+    }
+
+    #chart svg { display: block; overflow: visible; }
+
+    .description {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      color: #333333;
+      line-height: 1.65;
+      padding: 14px 28px 18px;
+      border-top: 0.5px solid #EEEEEE;
+      margin-top: 4px;
+    }
+
+    .source {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: #888888;
+      padding: 10px 28px 18px;
+      border-top: 0.5px solid #DDDDDD;
+      line-height: 1.5;
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: #fff;
+      border: 0.5px solid #ddd;
+      padding: 9px 12px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      color: #444;
+      line-height: 1.5;
+      max-width: 200px;
+    }
+    .tooltip strong {
+      font-family: Georgia, serif;
+      font-size: 12px;
+      color: #111;
+      display: block;
+      margin-bottom: 2px;
+    }
+  </style>
+</head>
+<body>
+<div class="tooltip" id="tooltip"></div>
+
+<div class="chart-wrapper">
+  <div class="chart-header">
+    <div class="rubric">Conflict</div>
+    <div class="title">One million Lebanese displaced in sixteen days</div>
+    <div class="subtitle">Cumulative people internally displaced in Lebanon since the start of the Iran war, thousands</div>
+  </div>
+
+  <div class="chart-area">
+    <div id="chart"></div>
+  </div>
+
+  <div class="description">
+    When US and Israeli forces launched Operation Epic Fury on February 28, 2026, Lebanon — still reeling from economic collapse, the 2020 Beirut port explosion, and years of political paralysis — became an immediate casualty. Within 16 days, more than one million people had fled their homes: roughly one in five of Lebanon's 5.5 million population. The pace was extraordinary: 700,000 in the first week alone. With 4.1 million Lebanese already in humanitarian need before the war began, the new displacement has overwhelmed collective shelters and aid systems that were already stretched to breaking point.
+  </div>
+
+  <div class="source">Sources: UNHCR, IOM Displacement Tracking Matrix, UNICEF, UN OCHA — Lebanon Situation Reports, Feb–Mar 2026&nbsp;&nbsp;|&nbsp;&nbsp;@enriqui</div>
+</div>
+
+<script>
+// ── DATA ────────────────────────────────────────────────────────────────
+const parseDate = d3.timeParse("%Y-%m-%d");
+
+const data = [
+  { date: "2026-02-28", displaced: 0,       event: "Operation Epic Fury begins" },
+  { date: "2026-03-02", displaced: 96000,   event: "Israeli evacuation orders issued" },
+  { date: "2026-03-05", displaced: 280000,  event: null },
+  { date: "2026-03-08", displaced: 560000,  event: "100k new registrations in one day" },
+  { date: "2026-03-09", displaced: 667000,  event: "Nearly 700k — 200,000 children" },
+  { date: "2026-03-11", displaced: 822000,  event: null },
+  { date: "2026-03-16", displaced: 1000000, event: "1 million milestone" },
+  { date: "2026-03-18", displaced: 1049328, event: "Latest (today)" },
+].map(d => ({ ...d, date: parseDate(d.date) }));
+
+// Context reference
+const LEBANON_POP = 5_500_000;
+const PRE_WAR_NEED = 4_100_000;
+
+// Annotation events for vertical lines
+const annotations = [
+  { date: parseDate("2026-02-28"), label: "War begins" },
+  { date: parseDate("2026-03-09"), label: "700k in 7 days" },
+  { date: parseDate("2026-03-16"), label: "1 million" },
+];
+
+// ── DIMENSIONS ──────────────────────────────────────────────────────────
+const margin = { top: 36, right: 60, bottom: 40, left: 72 };
+const width  = 900 - 28 * 2 - margin.left - margin.right;
+const height = 380 - margin.top - margin.bottom;
+
+const svg = d3.select("#chart")
+  .append("svg")
+    .attr("width",  width  + margin.left + margin.right)
+    .attr("height", height + margin.top  + margin.bottom)
+  .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// ── SCALES ───────────────────────────────────────────────────────────────
+const x = d3.scaleTime()
+  .domain([parseDate("2026-02-27"), parseDate("2026-03-20")])
+  .range([0, width]);
+
+const y = d3.scaleLinear()
+  .domain([0, 1_250_000])
+  .range([height, 0]);
+
+// ── GRID ─────────────────────────────────────────────────────────────────
+svg.append("g")
+  .attr("class", "grid")
+  .call(d3.axisLeft(y)
+    .ticks(5)
+    .tickSize(-width)
+    .tickFormat("")
+  )
+  .call(g => g.select(".domain").remove())
+  .call(g => g.selectAll(".tick line")
+    .attr("stroke", "#EEEEEE")
+    .attr("stroke-width", 0.5)
+  );
+
+// ── PRE-WAR NEED reference band (subtle) ─────────────────────────────────
+svg.append("line")
+  .attr("x1", 0).attr("x2", width)
+  .attr("y1", y(PRE_WAR_NEED)).attr("y2", y(PRE_WAR_NEED))
+  .attr("stroke", "#DDDDDD")
+  .attr("stroke-width", 1)
+  .attr("stroke-dasharray", "6,4");
+
+svg.append("text")
+  .attr("x", width + 4)
+  .attr("y", y(PRE_WAR_NEED) + 4)
+  .attr("font-size", "9px")
+  .attr("fill", "#AAAAAA")
+  .attr("font-family", "Arial, sans-serif")
+  .text("4.1m pre-war");
+
+// ── AREA ──────────────────────────────────────────────────────────────────
+const area = d3.area()
+  .x(d => x(d.date))
+  .y0(height)
+  .y1(d => y(d.displaced))
+  .curve(d3.curveMonotoneX);
+
+const line = d3.line()
+  .x(d => x(d.date))
+  .y(d => y(d.displaced))
+  .curve(d3.curveMonotoneX);
+
+// Gradient fill
+const defs = svg.append("defs");
+const gradient = defs.append("linearGradient")
+  .attr("id", "areaGradient")
+  .attr("x1", "0").attr("y1", "0")
+  .attr("x2", "0").attr("y2", "1");
+gradient.append("stop")
+  .attr("offset", "0%")
+  .attr("stop-color", "#E3120B")
+  .attr("stop-opacity", 0.18);
+gradient.append("stop")
+  .attr("offset", "100%")
+  .attr("stop-color", "#E3120B")
+  .attr("stop-opacity", 0.03);
+
+svg.append("path")
+  .datum(data)
+  .attr("fill", "url(#areaGradient)")
+  .attr("d", area);
+
+svg.append("path")
+  .datum(data)
+  .attr("fill", "none")
+  .attr("stroke", "#E3120B")
+  .attr("stroke-width", 2)
+  .attr("d", line);
+
+// ── ANNOTATION VERTICAL LINES ────────────────────────────────────────────
+annotations.forEach(ann => {
+  const xPos = x(ann.date);
+
+  svg.append("line")
+    .attr("x1", xPos).attr("x2", xPos)
+    .attr("y1", 0).attr("y2", height)
+    .attr("stroke", "#AAAAAA")
+    .attr("stroke-width", 0.8)
+    .attr("stroke-dasharray", "4,4");
+
+  svg.append("text")
+    .attr("x", xPos)
+    .attr("y", -8)
+    .attr("text-anchor", "middle")
+    .attr("font-size", "9px")
+    .attr("font-family", "Arial, sans-serif")
+    .attr("fill", "#888888")
+    .text(ann.label);
+});
+
+// ── DATA DOTS ─────────────────────────────────────────────────────────────
+const tooltip = d3.select("#tooltip");
+
+const formatNum = d3.format(",");
+const formatDate = d3.timeFormat("%b %d");
+
+svg.selectAll(".dot")
+  .data(data)
+  .enter()
+  .append("circle")
+    .attr("class", "dot")
+    .attr("cx", d => x(d.date))
+    .attr("cy", d => y(d.displaced))
+    .attr("r", d => d.displaced === 1049328 || d.displaced === 1000000 ? 5 : 3.5)
+    .attr("fill", "#E3120B")
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 1.5)
+    .style("cursor", "pointer")
+    .on("mouseover", function(event, d) {
+      d3.select(this).attr("r", 6);
+      tooltip
+        .style("opacity", 1)
+        .html(`<strong>${formatDate(d.date)}</strong>
+               ${formatNum(d.displaced)} displaced<br>
+               ${(d.displaced / LEBANON_POP * 100).toFixed(1)}% of population
+               ${d.event ? `<br><span style="color:#888;font-size:10px">${d.event}</span>` : ""}
+              `);
+    })
+    .on("mousemove", function(event) {
+      tooltip
+        .style("left", (event.pageX + 14) + "px")
+        .style("top",  (event.pageY - 28) + "px");
+    })
+    .on("mouseout", function(event, d) {
+      d3.select(this).attr("r", d.displaced === 1049328 || d.displaced === 1000000 ? 5 : 3.5);
+      tooltip.style("opacity", 0);
+    });
+
+// ── INLINE LABEL — final point ────────────────────────────────────────────
+const last = data[data.length - 1];
+svg.append("text")
+  .attr("x", x(last.date) + 8)
+  .attr("y", y(last.displaced) + 4)
+  .attr("font-size", "11px")
+  .attr("font-weight", "bold")
+  .attr("font-family", "Arial, sans-serif")
+  .attr("fill", "#E3120B")
+  .text("1.05m");
+
+// ── AXES ─────────────────────────────────────────────────────────────────
+// X axis
+svg.append("g")
+  .attr("transform", `translate(0,${height})`)
+  .call(d3.axisBottom(x)
+    .ticks(d3.timeDay.every(4))
+    .tickFormat(d3.timeFormat("%-d %b"))
+    .tickSize(0)
+  )
+  .call(g => g.select(".domain").remove())
+  .call(g => g.selectAll("text")
+    .attr("font-size", "10px")
+    .attr("font-family", "Arial, sans-serif")
+    .attr("fill", "#999999")
+    .attr("dy", "1.4em")
+  );
+
+// Y axis
+svg.append("g")
+  .call(d3.axisLeft(y)
+    .ticks(5)
+    .tickFormat(d => d === 0 ? "0" : `${(d / 1000).toFixed(0)}k`)
+    .tickSize(0)
+  )
+  .call(g => g.select(".domain").remove())
+  .call(g => g.selectAll("text")
+    .attr("font-size", "10px")
+    .attr("font-family", "Arial, sans-serif")
+    .attr("fill", "#999999")
+    .attr("dx", "-0.5em")
+  );
+</script>
+</body>
+</html>
