@@ -10,13 +10,18 @@ This is a personal project in data journalism — turning the day's most importa
 
 | Date | Topic | Data Source | Chart Type | Link |
 |------|-------|-------------|------------|------|
-| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_iea-emergency-releases/index.html) |
-| 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_tsmc-revenue/index.html) |
-| 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/index.html) |
+| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_iea-emergency-releases/) |
+| 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_tsmc-revenue/) |
+| 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/) |
+| 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/) |
 
 ---
 
 ## Stories behind the charts
+
+### 2026-03-19 — Taiwan: a sicker summer, every year
+
+Taiwan recorded its hottest year since measurements began in 1897 in 2024 — an annual mean temperature of 24.97°C, 1.66°C above the century-long average. The health toll has tracked the mercury upward: a nationwide analysis of Taiwan's National Health Insurance database found the rate of heat-related illness more than doubled between 2000 and 2018, rising from 1.76 to 4.17 cases per 10,000 people. Since then the pace has only quickened — working-age hospital admissions surged a further 74% between 2022 and 2024 alone, from 1,622 to 2,829 cases, according to Taiwan's Ministry of Health and Welfare. On an island sitting at the subtropical intersection of rising sea-surface temperatures and dense urban heat islands, the trajectory shows little sign of reversing.
 
 ### 2026-03-18 — Lebanon: 1 million displaced
 
