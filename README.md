@@ -10,10 +10,10 @@ This is a personal project in data journalism — turning the day's most importa
 
 | Date | Topic | Data Source | Chart Type | Link |
 |------|-------|-------------|------------|------|
-| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_iea-emergency-releases/) |
-| 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_tsmc-revenue/) |
-| 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/) |
-| 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/) |
+| 2026-03-17 | IEA record 400mb emergency oil release — Iran War | International Energy Agency (6 press releases) | Horizontal bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_iea-emergency-releases/index.html) |
+| 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_tsmc-revenue/index.html) |
+| 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/index.html) |
+| 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/index.html) |
 
 ---
 
