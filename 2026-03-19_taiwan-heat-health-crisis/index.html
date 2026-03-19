@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan's summers are turning deadlier — 2026-03-19</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0ede8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 48px 20px;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .chart-wrapper {
+      width: 900px;
+      background: #FFFFFF;
+      border-top: 3px solid #E3120B;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+    }
+    .chart-header { padding: 22px 28px 0; }
+    .rubric {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.13em; text-transform: uppercase;
+      color: #E3120B; margin-bottom: 8px;
+    }
+    .title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 20px; font-weight: 700;
+      color: #111111; line-height: 1.25;
+      margin-bottom: 5px; max-width: 680px;
+    }
+    .subtitle {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px; font-style: italic;
+      color: #444444; margin-bottom: 4px; line-height: 1.4;
+    }
+    .chart-area {
+      position: relative;
+      height: 400px;
+      margin-top: 14px;
+    }
+    .data-note {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9.5px; color: #BBBBBB;
+      padding: 4px 28px 0;
+      font-style: italic;
+    }
+    .description {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px; color: #333333;
+      line-height: 1.65; padding: 16px 28px 18px;
+      border-top: 0.5px solid #EEEEEE; margin-top: 14px;
+    }
+    .source {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px; color: #888888;
+      padding: 9px 28px 18px;
+      border-top: 0.5px solid #DDDDDD;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <div class="rubric">Environment &amp; Health &nbsp;·&nbsp; Taiwan</div>
+      <div class="title">Taiwan's summers are turning deadlier</div>
+      <div class="subtitle">
+        Blue line (left axis): nationwide heat-related illness rate per 10,000 — confirmed 2000–2018, projected 2019–2024 &nbsp;·&nbsp;
+        Red bars (right axis): working-age hospitalisations, ages 19–64
+      </div>
+    </div>
+
+    <div class="chart-area" id="chart"></div>
+    <div class="data-note">
+      Dashed section (2019–2024) projects the 2000–2018 confirmed linear trend forward; 2019–2024 nationwide published data not yet available.
+      Working-age hospitalisations (right axis) are a subset of total HRI and use a different scale.
+    </div>
+
+    <div class="description">
+      Taiwan recorded its hottest year since measurements began in 1897 in 2024 — an annual mean temperature of 24.97°C, 1.66°C above the century-long average. The health toll is tracking the mercury upward: a nationwide study of Taiwan's National Health Insurance database found the heat-related illness rate more than doubled between 2000 and 2018, from 1.76 to 4.17 per 10,000 people. In just the two years from 2022 to 2024, working-age hospital admissions surged a further 74%, from 1,622 to 2,829 cases — outpacing even the long-run trend. On an island sitting at the subtropical intersection of rising sea-surface temperatures and dense urban heat islands, the trajectory shows little sign of reversing.
+    </div>
+    <div class="source">
+      Sources: BMC Public Health (2025) — Taiwan National Health Insurance Research Database (101,614 patients, 2000–2018); Taiwan Ministry of Health and Welfare (2025); Central Weather Administration (Taiwan CWA) | @enriqui
+    </div>
+  </div>
+
+  <script>
+    // ── DATA ─────────────────────────────────────────────────────────────
+    // BMC confirmed: 2000 = 1.76, 2018 = 4.17 per 10,000
+    const slope = (4.17 - 1.76) / 18;  // 0.13389/yr
+
+    const yearsBMC  = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,
+                       2010,2011,2012,2013,2014,2015,2016,2017,2018];
+    const ratesBMC  = yearsBMC.map((_, i) => +( 1.76 + slope * i ).toFixed(2));
+
+    // Projected 2018–2024 (same slope, dashed)
+    const yearsProj = [2018,2019,2020,2021,2022,2023,2024];
+    const ratesProj = yearsProj.map((_, i) => +( 4.17 + slope * i ).toFixed(2));
+
+    // MOHW working-age hospitalizations — right axis (y2)
+    const yearsMOHW = [2022, 2024];
+    const casesMOHW = [1622, 2829];
+
+    // ── TRACES ──────────────────────────────────────────────────────────
+
+    // Bars behind everything (rendered first, lowest z-order)
+    const traceBars = {
+      x: yearsMOHW, y: casesMOHW,
+      type: 'bar',
+      yaxis: 'y2',
+      name: 'Working-age hospitalisations',
+      marker: {
+        color: ['rgba(227,18,11,0.25)', 'rgba(227,18,11,0.85)'],
+        line: { color: '#E3120B', width: 1 },
+      },
+      width: [0.7, 0.7],
+      hovertemplate: '<b>%{x}</b><br>Working-age admissions: <b>%{y:,}</b><br><i>ages 19–64 (Taiwan MOHW)</i><extra></extra>',
+      showlegend: false,
+    };
+
+    // Confirmed solid line
+    const traceConfLine = {
+      x: yearsBMC, y: ratesBMC,
+      type: 'scatter', mode: 'lines',
+      line: { color: '#006BA2', width: 3 },
+      hoverinfo: 'skip',
+      showlegend: false,
+    };
+
+    // Confirmed data dots
+    const traceConfDots = {
+      x: yearsBMC, y: ratesBMC,
+      type: 'scatter', mode: 'markers',
+      marker: {
+        color: yearsBMC.map((_, i) => (i===0||i===18) ? '#E3120B' : '#AAAAAA'),
+        size:  yearsBMC.map((_, i) => (i===0||i===18) ? 11 : 5),
+        line:  { color: '#FFFFFF', width: 1.5 },
+      },
+      customdata: yearsBMC.map((_, i) => i===0||i===18 ? 'Confirmed endpoint' : 'Interpolated'),
+      hovertemplate: '<b>%{x}</b><br>HRI rate: <b>%{y:.2f}</b> per 10,000<br><i>%{customdata}</i><extra></extra>',
+      showlegend: false,
+    };
+
+    // Projected dashed line
+    const traceProjLine = {
+      x: yearsProj, y: ratesProj,
+      type: 'scatter', mode: 'lines',
+      line: { color: '#006BA2', width: 2.2, dash: 'dot' },
+      hoverinfo: 'skip',
+      showlegend: false,
+    };
+
+    // Projected open-circle dots
+    const traceProjDots = {
+      x: yearsProj.slice(1), y: ratesProj.slice(1),
+      type: 'scatter', mode: 'markers',
+      marker: { color: '#FFFFFF', size: 7, line: { color: '#006BA2', width: 1.8 } },
+      hovertemplate: '<b>%{x}</b><br>Projected HRI rate: <b>%{y:.2f}</b> per 10,000<br><i>linear extrapolation</i><extra></extra>',
+      showlegend: false,
+    };
+
+    // ── LAYOUT ──────────────────────────────────────────────────────────
+    const layout = {
+      paper_bgcolor: '#FFFFFF',
+      plot_bgcolor: '#FFFFFF',
+      margin: { t: 16, r: 80, b: 48, l: 64 },
+      barmode: 'overlay',
+
+      xaxis: {
+        range: [1999, 2025.5],
+        tickvals: [2000,2003,2006,2009,2012,2015,2018,2021,2024],
+        ticktext: ['2000',"'03","'06","'09","'12","'15","'18","'21",'2024'],
+        tickfont: { family: 'Arial, sans-serif', size: 10.5, color: '#999999' },
+        showgrid: false, zeroline: false, showline: false, ticks: '',
+      },
+
+      yaxis: {
+        range: [0, 6.2],
+        tickvals: [0,1,2,3,4,5],
+        tickfont: { family: 'Arial, sans-serif', size: 10.5, color: '#006BA2' },
+        gridcolor: '#EEEEEE', gridwidth: 0.6,
+        zeroline: false, showline: false, ticks: '',
+        title: {
+          text: 'HRI rate per 10,000 people',
+          font: { family: 'Arial, sans-serif', size: 10, color: '#006BA2' },
+          standoff: 10,
+        },
+      },
+
+      yaxis2: {
+        overlaying: 'y', side: 'right',
+        range: [0, 5500],
+        tickvals: [0, 1000, 2000, 3000],
+        ticktext: ['0','1,000','2,000','3,000'],
+        tickfont: { family: 'Arial, sans-serif', size: 10.5, color: '#E3120B' },
+        showgrid: false, zeroline: false, showline: false, ticks: '',
+        title: {
+          text: 'Working-age hospitalisations',
+          font: { family: 'Arial, sans-serif', size: 10, color: '#E3120B' },
+          standoff: 10,
+        },
+      },
+
+      shapes: [
+        // Divider: confirmed vs projected
+        {
+          type: 'line',
+          x0: 2018.5, x1: 2018.5, y0: 0, y1: 1,
+          xref: 'x', yref: 'paper',
+          line: { color: '#DDDDDD', width: 1, dash: 'dot' },
+        },
+        // Shaded projection zone
+        {
+          type: 'rect',
+          x0: 2018.5, x1: 2025.5, y0: 0, y1: 1,
+          xref: 'x', yref: 'paper',
+          fillcolor: 'rgba(0,0,0,0.022)',
+          line: { width: 0 }, layer: 'below',
+        },
+      ],
+
+      annotations: [
+        // Zone labels
+        {
+          x: 2009, y: 5.82, xref: 'x', yref: 'y',
+          text: 'Nationwide study (confirmed)',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 9.5, color: '#006BA2' },
+          xanchor: 'center',
+        },
+        {
+          x: 2022, y: 5.82, xref: 'x', yref: 'y',
+          text: 'Projected trend',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 9.5, color: '#AAAAAA', style: 'italic' },
+          xanchor: 'center',
+        },
+
+        // Confirmed endpoint value labels
+        {
+          x: 2000, y: 1.76, xref: 'x', yref: 'y',
+          text: '<b>1.76</b>',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 11, color: '#E3120B' },
+          xanchor: 'right', yanchor: 'middle', xshift: -10,
+        },
+        {
+          x: 2018, y: 4.17, xref: 'x', yref: 'y',
+          text: '<b>4.17</b>  +137%',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 11, color: '#E3120B' },
+          xanchor: 'left', yanchor: 'middle', xshift: 10,
+        },
+
+        // MOHW bar value labels (on y2 scale)
+        {
+          x: 2022, y: 1622, xref: 'x', yref: 'y2',
+          text: '1,622',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 10, color: '#999999' },
+          xanchor: 'center', yanchor: 'bottom', yshift: 5,
+        },
+        {
+          x: 2024, y: 2829, xref: 'x', yref: 'y2',
+          text: '<b>2,829</b>  +74%',
+          showarrow: false,
+          font: { family: 'Arial, sans-serif', size: 10.5, color: '#E3120B' },
+          xanchor: 'center', yanchor: 'bottom', yshift: 5,
+        },
+
+        // Temperature callout
+        {
+          x: 2024, y: 0.13, xref: 'x', yref: 'paper',
+          text: 'Hottest year<br>on record (+1.66°C)',
+          showarrow: true,
+          arrowhead: 2, arrowsize: 0.7,
+          arrowcolor: '#BBBBBB', arrowwidth: 1,
+          ax: -60, ay: -30,
+          font: { family: 'Arial, sans-serif', size: 9.5, color: '#888888' },
+          xanchor: 'right', align: 'right',
+        },
+      ],
+
+      hoverlabel: {
+        bgcolor: '#FFFFFF',
+        bordercolor: '#DDDDDD',
+        font: { family: 'Georgia, serif', size: 12, color: '#111111' },
+        namelength: 0,
+      },
+    };
+
+    const config = { responsive: true, displayModeBar: false };
+
+    Plotly.newPlot('chart',
+      [traceBars, traceConfLine, traceConfDots, traceProjLine, traceProjDots],
+      layout, config);
+  </script>
+</body>
+</html>
