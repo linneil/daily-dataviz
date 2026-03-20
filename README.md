@@ -14,10 +14,15 @@ This is a personal project in data journalism — turning the day's most importa
 | 2026-03-17 | TSMC annual revenue 2013–2025 — Taiwan's AI chip boom | TSMC Annual Reports / SEC Form 20-F | Annotated bar | [View](https://linneil.github.io/daily-dataviz/2026-03-17_tsmc-revenue/index.html) |
 | 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/index.html) |
 | 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/index.html) |
+| 2026-03-20 | SaaS pricing models are shifting — per-seat down, agentic-based up | OpenView Partners; Growth Unhinged; Gartner | Grouped bar | [View](https://linneil.github.io/daily-dataviz/2026-03-20_saas-agentic-pricing-shift/index.html) |
 
 ---
 
 ## Stories behind the charts
+
+### 2026-03-20 — SaaS pricing in transition
+
+For two decades, selling software meant counting seats. How many users, how many licences — a simple, predictable model that powered the SaaS boom. That model is now under structural pressure. Survey data from OpenView Partners and Growth Unhinged shows the share of B2B software companies using per-seat pricing as their primary model has fallen from 37% in 2021 to just 15% in 2025. Over the same period, outcome-based and agentic pricing — where vendors charge for results or AI-agent actions rather than human users — climbed from 3% to 15%, reaching parity for the first time. Hybrid structures, mixing seats with usage, now make up the single largest category at 41%. The catalyst is AI: agents that complete tasks autonomously have no seat to bill. Gartner projects 40% of enterprise applications will embed agentic AI by end of 2026, up from under 1% in 2024. IDC forecasts that pure seat-based pricing will be obsolete for 70% of vendors by 2028. The shift is structural, not cyclical.
 
 ### 2026-03-19 — Taiwan: a sicker summer, every year
 

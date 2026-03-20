@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SaaS Pricing Models in Transition | Daily Dataviz</title>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #FFFFFF;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      color: #121212;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    .page-wrap {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 36px 28px 32px;
+    }
+
+    /* ── NYT-style header ── */
+    .eyebrow {
+      font-size: 10.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #D0021B;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    h1.headline {
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.18;
+      color: #121212;
+      margin-bottom: 12px;
+      max-width: 640px;
+    }
+
+    .subhead {
+      font-size: 15px;
+      line-height: 1.6;
+      color: #555;
+      font-style: italic;
+      margin-bottom: 18px;
+      max-width: 660px;
+    }
+
+    .nyt-rule-thick {
+      border: none;
+      border-top: 3px solid #121212;
+      margin-bottom: 3px;
+    }
+    .nyt-rule-thin {
+      border: none;
+      border-top: 1px solid #CCCCCC;
+      margin-bottom: 14px;
+    }
+
+    .source-line {
+      font-size: 9.5px;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 18px;
+    }
+
+    /* ── Chart embed ── */
+    #vl-chart {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .chart-axis-label {
+      font-size: 10px;
+      font-style: italic;
+      color: #999;
+      letter-spacing: 0.03em;
+      margin-bottom: 2px;
+      padding-left: 2px;
+    }
+
+    .chart-legend-row {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-left: 2px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #333;
+    }
+
+    .legend-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Stat callout row ── */
+    .stat-row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      flex: 1;
+      border: 1px solid #E0E0E0;
+      border-top: 3px solid #888888;
+      padding: 12px 16px 14px;
+      border-radius: 2px;
+    }
+
+    .stat-card.red-top {
+      border-top-color: #D0021B;
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 700;
+      color: #D0021B;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-card.grey .stat-number { color: #444; }
+
+    .stat-label {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: #444;
+    }
+
+    .stat-source {
+      font-size: 9px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: #AAA;
+      margin-top: 5px;
+    }
+
+    /* ── Events section ── */
+    .events-header {
+      font-size: 9.5px;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #888;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    /* Timeline SVG container */
+    .timeline-wrap {
+      width: 100%;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    /* ── Event cards row ── */
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .event-card {
+      border-left: 2px solid #CCCCCC;
+      padding: 6px 0 6px 10px;
+    }
+
+    .event-card.highlight {
+      border-left-color: #D0021B;
+    }
+
+    .event-date {
+      font-size: 9.5px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 3px;
+    }
+
+    .event-card.highlight .event-date {
+      color: #D0021B;
+    }
+
+    .event-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #121212;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+
+    .event-desc {
+      font-size: 10.5px;
+      color: #666;
+      line-height: 1.4;
+      font-style: italic;
+    }
+
+    /* ── SVG timeline axis ── */
+    .timeline-axis-wrap {
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 6px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid #E4E4E4;
+      padding-top: 14px;
+      margin-top: 8px;
+    }
+
+    .footnote {
+      font-size: 10.5px;
+      color: #888;
+      line-height: 1.7;
+    }
+
+    .footnote strong { color: #555; }
+  </style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- Header -->
+  <div class="eyebrow">Technology · Software &amp; AI</div>
+  <h1 class="headline">SaaS Pricing Models Are Shifting</h1>
+  <p class="subhead">
+    The share of software companies selling per-seat licences has fallen from 37% to 15% in four years,
+    while outcome-based and agentic pricing has climbed to the same level. Hybrid models
+    — mixing seats with usage — now make up the largest single category at 41%.
+  </p>
+  <hr class="nyt-rule-thick">
+  <hr class="nyt-rule-thin">
+  <div class="source-line">Source: OpenView Partners · Growth Unhinged · Gartner Research &nbsp;|&nbsp; March 2026</div>
+
+  <!-- Chart axis label + HTML legend (avoids Vega-Lite internal overlap) -->
+  <div class="chart-axis-label">% of SaaS companies using this pricing model</div>
+  <div class="chart-legend-row">
+    <div class="legend-item"><div class="legend-swatch" style="background:#888888;"></div>Per-seat (traditional)</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#D0021B;"></div>Outcome / agentic-based</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#5BA4A4;"></div>Hybrid</div>
+  </div>
+
+  <!-- Vega-Lite chart -->
+  <div id="vl-chart"></div>
+
+  <!-- Stat callout row -->
+  <div class="stat-row">
+    <div class="stat-card red-top">
+      <div class="stat-number">40%</div>
+      <div class="stat-label">of enterprise apps projected to embed agentic AI by end of 2026, up from &lt;1% in 2024</div>
+      <div class="stat-source">Gartner, 2025</div>
+    </div>
+    <div class="stat-card red-top">
+      <div class="stat-number">70%</div>
+      <div class="stat-label">of software vendors actively refactoring pricing models — pure seat-based pricing projected obsolete by 2028</div>
+      <div class="stat-source">IDC, 2025</div>
+    </div>
+    <div class="stat-card red-top grey">
+      <div class="stat-number" style="color:#444;">$300B</div>
+      <div class="stat-label">in SaaS market value erased in a single month (Feb 2026) as AI-agent adoption disrupted traditional seat count growth</div>
+      <div class="stat-source">Bloomberg / FactSet, Feb 2026</div>
+    </div>
+  </div>
+
+  <!-- Key events -->
+  <div class="events-header">Key milestones in the agentic AI revolution</div>
+
+  <!-- Timeline SVG axis with pills -->
+  <div class="timeline-wrap">
+    <svg viewBox="0 0 740 150" width="100%" height="150" style="display:block;">
+      <!-- translate everything down 18px so the topmost pill isn't clipped -->
+      <g transform="translate(0,18)">
+      <!-- ─── Axis line ─── -->
+      <line x1="30" y1="100" x2="710" y2="100" stroke="#CCCCCC" stroke-width="1.5"/>
+
+      <!-- ─── Year ticks & labels ─── -->
+      <line x1="30"  y1="96" x2="30"  y2="104" stroke="#999" stroke-width="1"/>
+      <line x1="200" y1="96" x2="200" y2="104" stroke="#999" stroke-width="1"/>
+      <line x1="370" y1="96" x2="370" y2="104" stroke="#999" stroke-width="1"/>
+      <line x1="540" y1="96" x2="540" y2="104" stroke="#999" stroke-width="1"/>
+      <line x1="710" y1="96" x2="710" y2="104" stroke="#999" stroke-width="1"/>
+
+      <text x="30"  y="118" font-family="Georgia,serif" font-size="10" fill="#999" text-anchor="middle">2022</text>
+      <text x="200" y="118" font-family="Georgia,serif" font-size="10" fill="#999" text-anchor="middle">2023</text>
+      <text x="370" y="118" font-family="Georgia,serif" font-size="10" fill="#999" text-anchor="middle">2024</text>
+      <text x="540" y="118" font-family="Georgia,serif" font-size="10" fill="#999" text-anchor="middle">2025</text>
+      <text x="710" y="118" font-family="Georgia,serif" font-size="10" fill="#999" text-anchor="middle">2026</text>
+
+      <!-- ═══════════════════════════════════════════════
+           EVENT 1 — Nov 2022: ChatGPT  (Level C, top_y=64)
+           Pill: x=104–240, center x=172
+      ════════════════════════════════════════════════ -->
+      <circle cx="172" cy="100" r="4" fill="#888"/>
+      <!-- leader -->
+      <line x1="172" y1="86" x2="172" y2="96" stroke="#888" stroke-width="1"/>
+      <line x1="172" y1="64" x2="172" y2="86" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
+      <!-- pill -->
+      <rect x="104" y="64" width="136" height="22" rx="11" fill="#F7F7F7" stroke="#CCCCCC" stroke-width="1"/>
+      <text x="172" y="79" font-family="Georgia,serif" font-size="9.5" fill="#333" text-anchor="middle">Nov '22 · ChatGPT launch</text>
+
+      <!-- ═══════════════════════════════════════════════
+           EVENT 2 — Nov 2023: OpenAI Assistants API  (Level B, top_y=36)
+           Pill: center x=330
+      ════════════════════════════════════════════════ -->
+      <circle cx="342" cy="100" r="4" fill="#888"/>
+      <line x1="342" y1="58" x2="342" y2="96" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
+      <!-- pill -->
+      <rect x="246" y="36" width="176" height="22" rx="11" fill="#F7F7F7" stroke="#CCCCCC" stroke-width="1"/>
+      <text x="334" y="51" font-family="Georgia,serif" font-size="9.5" fill="#333" text-anchor="middle">Nov '23 · Assistants API</text>
+
+<!-- ═══════════════════════════════════════════════
+           EVENT 4 — Nov 2024: Anthropic MCP  ★ HIGHLIGHT (Level A, top_y=8)
+           Pill: center x=512, BENT leader to avoid crossing Agentforce pill
+      ════════════════════════════════════════════════ -->
+      <circle cx="512" cy="100" r="5" fill="#D0021B"/>
+      <!-- outer ring (NYT highlight dot) -->
+      <circle cx="512" cy="100" r="10" fill="none" stroke="#D0021B" stroke-width="1.5" opacity="0.35"/>
+      <!-- bent leader: from MCP dot up, bends left to avoid Agentforce pill -->
+      <path d="M512,90 L512,78 L458,78 L458,32" fill="none" stroke="#D0021B" stroke-width="1.5"/>
+      <!-- pill (red, positioned left to accommodate leader at x=458) -->
+      <rect x="366" y="8" width="184" height="24" rx="12" fill="#FFF0F0" stroke="#D0021B" stroke-width="1.5"/>
+      <text x="458" y="24" font-family="Georgia,serif" font-size="9.5" fill="#D0021B" font-weight="bold" text-anchor="middle">Nov '24 · Anthropic MCP ★</text>
+
+      <!-- ═══════════════════════════════════════════════
+           EVENT 5 — Mar 2025: OpenAI Agents SDK  (Level B, top_y=36)
+           Pill: center x=600
+      ════════════════════════════════════════════════ -->
+      <circle cx="568" cy="100" r="4" fill="#888"/>
+      <!-- bent leader: go right to avoid MCP pill area -->
+      <path d="M568,96 L568,82 L610,82 L610,58" fill="none" stroke="#888" stroke-width="1" stroke-dasharray="3,2"/>
+      <!-- pill -->
+      <rect x="522" y="36" width="176" height="22" rx="11" fill="#F7F7F7" stroke="#CCCCCC" stroke-width="1"/>
+      <text x="610" y="51" font-family="Georgia,serif" font-size="9.5" fill="#333" text-anchor="middle">Mar '25 · Agents SDK</text>
+
+      </g><!-- /translate -->
+    </svg>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p class="footnote">
+      <strong>Notes:</strong> Pricing-model figures represent the share of surveyed B2B software companies reporting each model as primary, drawn from OpenView Partners annual SaaS benchmarks (2021–2023) and Growth Unhinged's 2025 State of B2B Monetization report. "Hybrid" includes usage-based and consumption-based structures. Outcome/agentic-based includes per-outcome, per-task, and AI-agent-usage pricing. 2024 data gap reflects mid-cycle survey timing; the 2025 figure reflects a survey covering Jan–Dec 2024 activity. Gartner enterprise agentic AI penetration data from Q1 2025 analyst forecast. IDC projection sourced from 2025 software market outlook. SaaS market-value decline figure from Bloomberg/FactSet consensus as of February 2026.
+    </p>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+const spec = {
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 310,
+  "background": "#FFFFFF",
+  "config": {
+    "font": "Georgia, serif",
+    "view": { "stroke": null },
+    "axis": {
+      "labelFont": "Georgia, serif",
+      "titleFont": "Georgia, serif",
+      "labelFontSize": 12,
+      "titleFontSize": 11,
+      "gridColor": "#EFEFEF",
+      "gridDash": [2, 3],
+      "gridWidth": 1,
+      "domainColor": "#444",
+      "tickColor": "#AAA",
+      "labelColor": "#555",
+      "titleColor": "#555",
+      "titlePadding": 8
+    },
+    "legend": { "disable": true },
+    "bar": {
+      "cornerRadiusTopLeft": 2,
+      "cornerRadiusTopRight": 2
+    }
+  },
+  "layer": [
+    {
+      "mark": { "type": "bar" },
+      "encoding": {
+        "x": {
+          "field": "year",
+          "type": "ordinal",
+          "axis": {
+            "title": null,
+            "labelFontSize": 14,
+            "labelFontWeight": "normal",
+            "labelPadding": 10,
+            "tickBand": "extent"
+          }
+        },
+        "xOffset": {
+          "field": "model",
+          "sort": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"]
+        },
+        "y": {
+          "field": "pct",
+          "type": "quantitative",
+          "scale": { "domain": [0, 50] },
+          "axis": {
+            "title": null,
+            "format": "d",
+            "labelExpr": "datum.value + '%'",
+            "tickCount": 6
+          }
+        },
+        "color": {
+          "field": "model",
+          "sort": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"],
+          "scale": {
+            "domain": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"],
+            "range": ["#888888", "#D0021B", "#5BA4A4"]
+          }
+        },
+        "tooltip": [
+          { "field": "year", "title": "Year" },
+          { "field": "model", "title": "Pricing model" },
+          { "field": "pct", "title": "Share of companies", "format": ".0f", "suffix": "%" }
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "dy": -6,
+        "fontSize": 10,
+        "fontFamily": "Georgia, serif",
+        "fontWeight": "normal",
+        "color": "#666"
+      },
+      "encoding": {
+        "x": {
+          "field": "year",
+          "type": "ordinal"
+        },
+        "xOffset": {
+          "field": "model",
+          "sort": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"]
+        },
+        "y": {
+          "field": "pct",
+          "type": "quantitative"
+        },
+        "text": {
+          "field": "pct",
+          "format": ".0f",
+          "formatType": "number"
+        },
+        "color": {
+          "field": "model",
+          "sort": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"],
+          "scale": {
+            "domain": ["Per-seat (traditional)", "Outcome / agentic-based", "Hybrid"],
+            "range": ["#666666", "#B0001A", "#3D8080"]
+          }
+        }
+      }
+    }
+  ],
+  "data": {
+    "values": [
+      { "year": "2021", "model": "Per-seat (traditional)",    "pct": 37 },
+      { "year": "2021", "model": "Outcome / agentic-based",   "pct": 3  },
+      { "year": "2021", "model": "Hybrid",                    "pct": 20 },
+      { "year": "2022", "model": "Per-seat (traditional)",    "pct": 28 },
+      { "year": "2022", "model": "Outcome / agentic-based",   "pct": 6  },
+      { "year": "2022", "model": "Hybrid",                    "pct": 24 },
+      { "year": "2023", "model": "Per-seat (traditional)",    "pct": 21 },
+      { "year": "2023", "model": "Outcome / agentic-based",   "pct": 9  },
+      { "year": "2023", "model": "Hybrid",                    "pct": 27 },
+      { "year": "2025", "model": "Per-seat (traditional)",    "pct": 15 },
+      { "year": "2025", "model": "Outcome / agentic-based",   "pct": 15 },
+      { "year": "2025", "model": "Hybrid",                    "pct": 41 }
+    ]
+  }
+};
+
+vegaEmbed('#vl-chart', spec, {
+  actions: false,
+  renderer: 'svg'
+}).catch(console.error);
+</script>
+</body>
+</html>
