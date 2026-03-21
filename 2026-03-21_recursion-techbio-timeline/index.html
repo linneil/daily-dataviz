@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recursion Pharmaceuticals: The TechBio Paradigm | Daily Dataviz</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f0e8df;
+      font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 40px 20px 60px;
+      min-height: 100vh;
+    }
+
+    .chart-wrapper {
+      width: 900px;
+      background: #FFF1E5;
+      border-top: 3px solid #990F3D;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .chart-header { padding: 22px 28px 6px; }
+
+    .section-tag {
+      display: inline-block;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: #990F3D; background: #FFD7B5;
+      border-radius: 3px; padding: 2px 7px; margin-bottom: 10px;
+    }
+
+    .chart-title {
+      font-size: 18px; font-weight: 700;
+      color: #1A1A1A; line-height: 1.22;
+      margin-bottom: 5px; max-width: 780px;
+    }
+
+    .chart-subtitle {
+      font-size: 13px; color: #666666;
+      line-height: 1.4; margin-bottom: 0;
+    }
+
+    #chart { display: block; }
+    svg { display: block; background: #FFF1E5; }
+
+    .description {
+      font-size: 13px; color: #333333;
+      line-height: 1.65; padding: 16px 28px 18px;
+      border-top: 0.5px solid #D6C4B0;
+    }
+
+    .source {
+      font-size: 10px; font-style: italic; color: #999999;
+      padding: 8px 28px 16px;
+      border-top: 0.5px solid #D6B8A0; line-height: 1.6;
+    }
+
+    /* Tooltip */
+    #tooltip {
+      position: fixed;
+      background: #fff;
+      border: 0.5px solid #D6B8A0;
+      padding: 8px 11px;
+      font-size: 11px; color: #555;
+      pointer-events: none; opacity: 0;
+      transition: opacity 0.08s;
+      border-radius: 2px;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+      z-index: 100;
+    }
+    #tooltip .tt-date { font-size: 9.5px; color: #999; margin-bottom: 2px; }
+    #tooltip .tt-price { font-weight: 700; color: #990F3D; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="chart-wrapper">
+  <div class="chart-header">
+    <div class="section-tag">Tech Bio · Capital Markets</div>
+    <div class="chart-title">Recursion Pharmaceuticals: the TechBio paradigm — from $41 peak to $3 reckoning</div>
+    <div class="chart-subtitle">RXRX stock price (Apr 2021–Mar 2026) with key capital events and pipeline milestones</div>
+  </div>
+
+  <div id="chart"></div>
+
+  <div class="description">
+    Recursion Pharmaceuticals IPO'd in April 2021 at $18, reached an all-time high of $41.33 within three months, and has since fallen 92% to below $4 — a trajectory that mirrors the entire arc of the TechBio thesis. The company built one of the world's largest biological datasets, struck partnerships worth up to $12B with Roche/Genentech and Sanofi, and absorbed UK rival Exscientia for $688M. Yet clinical data has been mixed and the cost of running an AI-native drug factory at scale has relentlessly consumed capital. NVIDIA — which made a $50M strategic investment in 2023 — quietly sold its entire 7.71 million-share position by December 2025. Cathie Wood's ARK now holds 21.8 million shares, nearly three times NVIDIA's former stake. The divergence between NVIDIA's exit and ARK's accumulation marks two opposite readings of the same evidence — one closing its position near the floor, the other treating the same price as an entry point.
+  </div>
+  <div class="source">
+    Source: Recursion Pharmaceuticals IR press releases; Crunchbase; MacroTrends / Yahoo Finance; ARK Invest 13-F filings; Gartner; IDC. | @enriqui<br>
+    Note: Monthly stock prices are approximate, interpolated from confirmed anchors: IPO $18.00 (Apr 2021), ATH $41.33 (Jul 2021), ATL $2.98 (Feb 2026), current ~$3.42 (Mar 2026).
+  </div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-date" id="tt-date"></div>
+  <div class="tt-price" id="tt-price"></div>
+</div>
+
+<script>
+// ─── Stock price data (monthly, Apr 2021 – Mar 2026) ────────────────────────
+// Key confirmed anchors: IPO $18 (Apr 2021), ATH $41.33 (Jul 2021),
+// ATL $2.98 (Feb 2026), current ~$3.42 (Mar 2026).
+// Intermediate values interpolated from earnings reports and analyst coverage.
+const rawData = [
+  ["2021-04", 18.00], ["2021-05", 24.50], ["2021-06", 34.00],
+  ["2021-07", 41.33], ["2021-08", 36.50], ["2021-09", 31.00],
+  ["2021-10", 27.00], ["2021-11", 25.50], ["2021-12", 24.00],
+  ["2022-01", 21.50], ["2022-02", 17.00], ["2022-03", 14.50],
+  ["2022-04", 12.00], ["2022-05", 10.00], ["2022-06",  8.50],
+  ["2022-07",  8.00], ["2022-08",  9.20], ["2022-09",  7.80],
+  ["2022-10",  7.10], ["2022-11",  7.30], ["2022-12",  7.60],
+  ["2023-01",  6.80], ["2023-02",  7.20], ["2023-03",  7.80],
+  ["2023-04",  9.20], ["2023-05", 10.80], ["2023-06", 12.00],
+  ["2023-07", 14.00], ["2023-08", 12.20], ["2023-09", 11.00],
+  ["2023-10",  9.50], ["2023-11",  9.00], ["2023-12",  8.60],
+  ["2024-01",  9.60], ["2024-02",  9.10], ["2024-03",  8.50],
+  ["2024-04",  8.10], ["2024-05",  8.60], ["2024-06",  7.60],
+  ["2024-07",  7.10], ["2024-08",  9.20], ["2024-09",  7.90],
+  ["2024-10",  6.60], ["2024-11",  5.90], ["2024-12",  5.10],
+  ["2025-01",  5.00], ["2025-02",  5.40], ["2025-03",  4.80],
+  ["2025-04",  4.20], ["2025-05",  4.60], ["2025-06",  5.10],
+  ["2025-07",  5.60], ["2025-08",  5.90], ["2025-09",  5.50],
+  ["2025-10",  5.10], ["2025-11",  5.30], ["2025-12",  4.60],
+  ["2026-01",  4.00], ["2026-02",  2.98], ["2026-03",  3.42],
+];
+
+// ─── Capital events (shown below x-axis) ────────────────────────────────────
+const capitalEvents = [
+  { date: "2021-04", label: "+$436M IPO",      color: "#990F3D" },
+  { date: "2023-07", label: "+$50M NVIDIA",    color: "#2D7D46" },
+  { date: "2025-10", label: "+$388M ATM",      color: "#990F3D" },
+];
+
+// ─── Milestone annotations (vertical flags above chart) ─────────────────────
+// level "A" = top row (y=-110), level "B" = bottom row (y=-62)
+const events = [
+  { date: "2021-04", label: "IPO · $18/share",        sub: "$436M raised",         level: "B", color: "#990F3D" },
+  { date: "2021-12", label: "Roche/Genentech deal",   sub: "up to $12B potential", level: "A", color: "#555555" },
+  { date: "2022-06", label: "Sanofi collab",           sub: null,                   level: "B", color: "#555555" },
+  { date: "2023-07", label: "NVIDIA invests",          sub: "$50M strategic",       level: "A", color: "#2D7D46" },
+  { date: "2024-10", label: "Exscientia",              sub: "$688M deal & close",   level: "B", color: "#555555" },
+  { date: "2025-12", label: "NVIDIA exits",            sub: "full 7.71M position",  level: "A", color: "#C03000" },
+  { date: "2026-03", label: "ARK loads up",            sub: "21.8M shares",         level: "B", color: "#990F3D" },
+];
+
+// ─── Chart setup ────────────────────────────────────────────────────────────
+const parseDate  = d3.timeParse("%Y-%m");
+const formatDate = d3.timeFormat("%b %Y");
+
+const data  = rawData.map(([d, p]) => ({ date: parseDate(d), price: p }));
+const evts  = events.map(e => ({ ...e, date: parseDate(e.date) }));
+const capEvts = capitalEvents.map(e => ({ ...e, date: parseDate(e.date) }));
+
+const margin      = { top: 148, right: 52, bottom: 78, left: 58 };
+const svgWidth    = 900;
+const chartHeight = 280;
+const svgHeight   = margin.top + chartHeight + margin.bottom;
+const chartWidth  = svgWidth - margin.left - margin.right;
+
+const xScale = d3.scaleTime()
+  .domain([new Date(2021, 3, 1), new Date(2026, 3, 1)])
+  .range([0, chartWidth]);
+
+const yScale = d3.scaleLinear()
+  .domain([0, 46])
+  .range([chartHeight, 0]);
+
+const levelY = { A: -110, B: -62 };
+
+// ─── SVG ────────────────────────────────────────────────────────────────────
+const svg = d3.select("#chart")
+  .append("svg")
+  .attr("width",   svgWidth)
+  .attr("height",  svgHeight)
+  .attr("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+
+// full background
+svg.append("rect").attr("width", svgWidth).attr("height", svgHeight).attr("fill", "#FFF1E5");
+
+const g = svg.append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// ─── Horizontal grid lines ───────────────────────────────────────────────────
+[0, 10, 20, 30, 40].forEach(v => {
+  g.append("line")
+    .attr("x1", 0).attr("x2", chartWidth)
+    .attr("y1", yScale(v)).attr("y2", yScale(v))
+    .attr("stroke", "rgba(180,140,110,0.28)")
+    .attr("stroke-width", 0.5);
+});
+
+// ─── IPO price reference line ────────────────────────────────────────────────
+g.append("line")
+  .attr("x1", 0).attr("x2", chartWidth)
+  .attr("y1", yScale(18)).attr("y2", yScale(18))
+  .attr("stroke", "#C8A880").attr("stroke-width", 0.9)
+  .attr("stroke-dasharray", "5,4");
+g.append("text")
+  .attr("x", chartWidth + 4).attr("y", yScale(18) + 3.5)
+  .attr("font-size", "9px").attr("font-family", "Arial, sans-serif")
+  .attr("fill", "#B89070").text("IPO $18");
+
+// ─── Area ────────────────────────────────────────────────────────────────────
+const area = d3.area()
+  .x(d => xScale(d.date))
+  .y0(chartHeight)
+  .y1(d => yScale(d.price))
+  .curve(d3.curveCatmullRom.alpha(0.5));
+
+g.append("path").datum(data)
+  .attr("d", area)
+  .attr("fill", "rgba(153,15,61,0.075)");
+
+// ─── Price line ───────────────────────────────────────────────────────────────
+const line = d3.line()
+  .x(d => xScale(d.date))
+  .y(d => yScale(d.price))
+  .curve(d3.curveCatmullRom.alpha(0.5));
+
+g.append("path").datum(data)
+  .attr("d", line)
+  .attr("fill", "none")
+  .attr("stroke", "#990F3D")
+  .attr("stroke-width", 2);
+
+// ─── ATH direct label ────────────────────────────────────────────────────────
+const athPoint = data.find(d => d.price === 41.33);
+if (athPoint) {
+  g.append("circle")
+    .attr("cx", xScale(athPoint.date)).attr("cy", yScale(41.33))
+    .attr("r", 3.5).attr("fill", "#990F3D")
+    .attr("stroke", "#FFF1E5").attr("stroke-width", 1.5);
+  g.append("text")
+    .attr("x", xScale(athPoint.date) + 7).attr("y", yScale(41.33) - 5)
+    .attr("font-size", "9.5px").attr("font-family", "Arial, sans-serif")
+    .attr("font-weight", "700").attr("fill", "#990F3D")
+    .text("ATH $41.33");
+}
+
+// ─── Current price label ──────────────────────────────────────────────────────
+const last = data[data.length - 1];
+g.append("circle")
+  .attr("cx", xScale(last.date)).attr("cy", yScale(last.price))
+  .attr("r", 4).attr("fill", "#990F3D")
+  .attr("stroke", "#FFF1E5").attr("stroke-width", 2);
+g.append("text")
+  .attr("x", xScale(last.date) - 6).attr("y", yScale(last.price) - 8)
+  .attr("font-size", "9.5px").attr("font-family", "Arial, sans-serif")
+  .attr("font-weight", "700").attr("fill", "#990F3D")
+  .attr("text-anchor", "end")
+  .text("$3.42 (Mar '26)");
+
+// ─── Y-axis labels ────────────────────────────────────────────────────────────
+[0, 10, 20, 30, 40].forEach(v => {
+  g.append("text")
+    .attr("x", -8).attr("y", yScale(v) + 3.5)
+    .attr("text-anchor", "end")
+    .attr("font-size", "10px").attr("font-family", "Arial, sans-serif")
+    .attr("fill", "#999")
+    .text(`$${v}`);
+});
+
+// ─── X-axis ───────────────────────────────────────────────────────────────────
+g.append("line")
+  .attr("x1", 0).attr("x2", chartWidth)
+  .attr("y1", chartHeight).attr("y2", chartHeight)
+  .attr("stroke", "#CCC").attr("stroke-width", 0.8);
+
+[2021, 2022, 2023, 2024, 2025, 2026].forEach(yr => {
+  const xpRaw = xScale(new Date(yr, 0, 1));
+  const xp     = Math.max(0, xpRaw);
+  const anchor = (yr === 2021) ? "start" : "middle";
+  g.append("line")
+    .attr("x1", xp).attr("x2", xp)
+    .attr("y1", chartHeight).attr("y2", chartHeight + 5)
+    .attr("stroke", "#BBB").attr("stroke-width", 0.8);
+  g.append("text")
+    .attr("x", xp).attr("y", chartHeight + 16)
+    .attr("text-anchor", anchor)
+    .attr("font-size", "10px").attr("font-family", "Arial, sans-serif")
+    .attr("fill", "#999").text(yr);
+});
+
+// ─── Capital events below x-axis ─────────────────────────────────────────────
+capEvts.forEach(ev => {
+  const xp = xScale(ev.date);
+  // upward triangle
+  g.append("path")
+    .attr("d", `M${xp},${chartHeight + 26} L${xp - 5},${chartHeight + 38} L${xp + 5},${chartHeight + 38} Z`)
+    .attr("fill", ev.color).attr("opacity", 0.85);
+  const anchor = xp < 100 ? "start" : xp > chartWidth - 100 ? "end" : "middle";
+  g.append("text")
+    .attr("x", xp).attr("y", chartHeight + 52)
+    .attr("text-anchor", anchor)
+    .attr("font-size", "8.5px").attr("font-family", "Arial, sans-serif")
+    .attr("fill", ev.color).attr("font-weight", "600")
+    .text(ev.label);
+});
+
+// ─── Milestone event annotations ──────────────────────────────────────────────
+evts.forEach(ev => {
+  const xp = xScale(ev.date);
+  const yTop = levelY[ev.level];
+  const lineBottom = ev.level === "A" ? yTop + (ev.sub ? 26 : 15) : yTop + (ev.sub ? 26 : 15);
+
+  // dashed vertical leader line
+  g.append("line")
+    .attr("x1", xp).attr("x2", xp)
+    .attr("y1", lineBottom).attr("y2", chartHeight)
+    .attr("stroke", "#C8A080").attr("stroke-width", 0.8)
+    .attr("stroke-dasharray", "4,3").attr("opacity", 0.75);
+
+  // dot on the price line at event date
+  const pt = data.find(d =>
+    d.date.getFullYear() === ev.date.getFullYear() &&
+    d.date.getMonth()    === ev.date.getMonth()
+  );
+  if (pt) {
+    g.append("circle")
+      .attr("cx", xp).attr("cy", yScale(pt.price))
+      .attr("r", 3.5).attr("fill", ev.color)
+      .attr("stroke", "#FFF1E5").attr("stroke-width", 1.5);
+  }
+
+  // text anchor & x-position
+  let anchor = "middle", labelX = xp;
+  if (xp < 90)              { anchor = "start";  labelX = xp; }
+  else if (xp > chartWidth - 90) { anchor = "end"; labelX = xp; }
+
+  // main label
+  g.append("text")
+    .attr("x", labelX).attr("y", yTop)
+    .attr("text-anchor", anchor)
+    .attr("font-size", "9px").attr("font-family", "Arial, sans-serif")
+    .attr("font-weight", "700").attr("fill", ev.color)
+    .text(ev.label);
+
+  // sub-label
+  if (ev.sub) {
+    g.append("text")
+      .attr("x", labelX).attr("y", yTop + 13)
+      .attr("text-anchor", anchor)
+      .attr("font-size", "8.5px").attr("font-family", "Arial, sans-serif")
+      .attr("fill", ev.color).attr("opacity", 0.8)
+      .text(ev.sub);
+  }
+});
+
+// ─── "92% from peak" callout label ──────────────────────────────────────────
+// Draw a thin bracket-style annotation between ATH and current
+const xAtl = xScale(data[data.length - 2].date); // Feb 2026 (ATL)
+const yAtl = yScale(2.98);
+const yAth = yScale(41.33);
+const xCallout = xAtl - 22;
+
+g.append("line")
+  .attr("x1", xCallout).attr("x2", xCallout)
+  .attr("y1", yAtl).attr("y2", yAth)
+  .attr("stroke", "#C8A080").attr("stroke-width", 0.8);
+[yAtl, yAth].forEach(y => {
+  g.append("line")
+    .attr("x1", xCallout - 3).attr("x2", xCallout + 3)
+    .attr("y1", y).attr("y2", y)
+    .attr("stroke", "#C8A080").attr("stroke-width", 0.8);
+});
+g.append("text")
+  .attr("x", xCallout - 5).attr("y", (yAtl + yAth) / 2 + 4)
+  .attr("text-anchor", "end")
+  .attr("font-size", "9px").attr("font-family", "Arial, sans-serif")
+  .attr("fill", "#B89070").attr("transform", `rotate(-90, ${xCallout - 5}, ${(yAtl + yAth) / 2 + 4})`)
+  .text("−92% from ATH");
+
+// ─── Tooltip ─────────────────────────────────────────────────────────────────
+const bisect = d3.bisector(d => d.date).left;
+const tooltip = d3.select("#tooltip");
+
+const crosshair = g.append("line")
+  .attr("y1", 0).attr("y2", chartHeight)
+  .attr("stroke", "#B89070").attr("stroke-width", 0.8)
+  .attr("stroke-dasharray", "4,3").attr("opacity", 0);
+
+g.append("rect")
+  .attr("width", chartWidth).attr("height", chartHeight)
+  .attr("fill", "transparent").attr("cursor", "crosshair")
+  .on("mousemove", function(event) {
+    const [mx] = d3.pointer(event);
+    const mouseDate = xScale.invert(mx);
+    const i = bisect(data, mouseDate, 1);
+    const d0 = data[Math.max(0, i - 1)];
+    const d1 = data[Math.min(data.length - 1, i)];
+    const d = mouseDate - d0.date > d1.date - mouseDate ? d1 : d0;
+
+    crosshair
+      .attr("x1", xScale(d.date)).attr("x2", xScale(d.date))
+      .attr("opacity", 1);
+
+    tooltip
+      .style("opacity", 1)
+      .style("left", (event.clientX + 14) + "px")
+      .style("top",  (event.clientY - 24) + "px");
+
+    d3.select("#tt-date").text(formatDate(d.date));
+    d3.select("#tt-price").text("$" + d.price.toFixed(2));
+  })
+  .on("mouseleave", function() {
+    crosshair.attr("opacity", 0);
+    tooltip.style("opacity", 0);
+  });
+</script>
+</body>
+</html>

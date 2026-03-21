@@ -15,10 +15,15 @@ This is a personal project in data journalism — turning the day's most importa
 | 2026-03-18 | Lebanon: 1 million displaced in 16 days — Iran war fallout | UNHCR, IOM DTM, UNICEF, UN OCHA | Area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-18_lebanon-displacement-2026/index.html) |
 | 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/index.html) |
 | 2026-03-20 | SaaS pricing models are shifting — per-seat down, agentic-based up | OpenView Partners; Growth Unhinged; Gartner | Grouped bar | [View](https://linneil.github.io/daily-dataviz/2026-03-20_saas-agentic-pricing-shift/index.html) |
+| 2026-03-21 | Recursion Pharmaceuticals — TechBio paradigm, from $41 peak to $3 reckoning | Recursion IR; Crunchbase; MacroTrends; ARK Invest 13-F | Annotated area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-21_recursion-techbio-timeline/index.html) |
 
 ---
 
 ## Stories behind the charts
+
+### 2026-03-21 — Recursion: the TechBio paradigm
+
+Recursion Pharmaceuticals was founded on a bold thesis: that artificial intelligence and high-throughput biology could industrialise drug discovery at a scale no human team could match. The market believed it. After raising $436 million at its April 2021 IPO, the stock surged to an all-time high of $41.33 in July — a valuation that implied Recursion had already solved problems the pharmaceutical industry had wrestled with for decades. The deals followed: a $12 billion potential collaboration with Roche and Genentech in December 2021, a strategic $50 million investment from NVIDIA in July 2023, and the $688 million acquisition of UK rival Exscientia in 2024. Then came the reckoning. NVIDIA quietly exited its position in late 2025. Clinical setbacks accumulated. The stock hit an all-time low of $2.98 in February 2026 — a 92% decline from its peak. Yet in March 2026, Cathie Wood's ARK Invest began buying. The chart does not resolve the question of whether Recursion is a failed experiment or a paradigm waiting for its moment. It simply shows what the journey has cost.
 
 ### 2026-03-20 — SaaS pricing in transition
 
