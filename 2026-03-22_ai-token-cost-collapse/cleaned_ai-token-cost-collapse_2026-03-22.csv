@@ -1,0 +1,22 @@
+provider,model,release_date,input_price_per_million_usd,notes
+OpenAI,GPT-3.5 Turbo,2022-11,2.00,Launch pricing
+OpenAI,GPT-4,2023-03,30.00,Frontier model launch spike
+OpenAI,GPT-3.5 Turbo (reduced),2023-07,10.00,First major price cut
+OpenAI,GPT-4o,2024-05,2.50,Multimodal frontier model
+OpenAI,GPT-4o Mini,2024-07,0.15,Budget frontier tier
+OpenAI,GPT-4.1 Nano,2025-04,0.10,Smallest variant
+OpenAI,GPT-5 nano,2026-02,0.05,Current budget tier
+OpenAI,GPT-5.2,2026-02,1.75,Current flagship
+OpenAI,GPT-5.2 Pro,2026-02,21.00,Premium tier
+Anthropic,Claude Opus 3,2024-03,15.00,Flagship at launch
+Anthropic,Claude Sonnet 3,2024-06,3.00,Mid-tier
+Anthropic,Claude Sonnet 4.6,2026-01,3.00,Current mid-tier
+Anthropic,Claude Opus 4.6,2026-01,5.00,Current flagship
+Google,Gemini 2.5 Pro,2025-01,1.25,First Gemini 2.5 series
+Google,Gemini 2.5 Flash,2025-06,0.30,Budget variant
+Google,Gemini 3 Flash,2026-01,0.50,Current budget variant
+Google,Gemini 3.1 Pro,2026-01,2.00,Current flagship (standard tier)
+DeepSeek,DeepSeek R1,2025-01,0.55,Open-source disruption
+DeepSeek,DeepSeek V3.2-Exp,2025-09,0.028,Cache-hit pricing; cache-miss at $0.28
+xAI,Grok 4,2026-01,3.00,Flagship
+xAI,Grok 4 Fast,2026-01,0.20,Fast variant

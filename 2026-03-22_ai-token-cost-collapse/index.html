@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Token Cost Collapse — 2026-03-22</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0F0F1E;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .chart-wrapper {
+      width: 900px;
+      background: #1A1A2E;
+      border-top: 2px solid #00A8E8;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    }
+    .chart-header {
+      padding: 22px 28px 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .category-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #00A8E8;
+      margin-bottom: 8px;
+    }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFFFFF;
+      line-height: 1.2;
+      margin-bottom: 5px;
+      max-width: 680px;
+    }
+    .change-indicator {
+      font-size: 13px;
+      font-weight: 700;
+      color: #00C9A7;
+      white-space: nowrap;
+      margin-top: 3px;
+    }
+    .subtitle {
+      font-size: 12px;
+      color: #AAAAAA;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    .chart-area {
+      padding: 0 28px;
+      position: relative;
+    }
+    .description {
+      font-size: 13px;
+      color: #CCCCCC;
+      line-height: 1.65;
+      padding: 16px 28px 20px;
+      border-top: 0.5px solid rgba(255,255,255,0.08);
+    }
+    .source {
+      font-size: 10px;
+      color: #555555;
+      padding: 8px 28px 18px;
+      border-top: 0.5px solid rgba(255,255,255,0.06);
+    }
+    #tooltip {
+      position: absolute;
+      background: #0D0D1A;
+      border: 1px solid #00A8E8;
+      border-radius: 4px;
+      padding: 10px 14px;
+      pointer-events: none;
+      opacity: 0;
+      font-size: 11px;
+      color: #CCCCCC;
+      line-height: 1.7;
+      min-width: 170px;
+      z-index: 10;
+      transition: opacity 0.1s;
+    }
+  </style>
+</head>
+<body>
+  <div class="chart-wrapper">
+    <div class="chart-header">
+      <div class="category-tag">AI Token Economics</div>
+      <div class="title-row">
+        <div class="title">The 99.7% Collapse: Cost of AI per Million Tokens, 2022–2026</div>
+        <div class="change-indicator">▼ −99.7%</div>
+      </div>
+      <div class="subtitle">Input cost in USD per million tokens, selected frontier models — logarithmic scale</div>
+    </div>
+
+    <div class="chart-area" id="chart-container">
+      <div id="tooltip"></div>
+    </div>
+
+    <div class="description">
+      In November 2022, running a frontier AI model cost roughly $20 per million tokens. By February 2026, equivalent capability costs $0.05 — a 400-fold decline in under four years. The collapse was not gradual: it arrived in lurches. OpenAI's GPT-4 briefly spiked costs to $30 at launch, then efficiency gains and competition drove them down. The January 2025 DeepSeek shock — open-source models at a fraction of incumbent prices — forced every major provider to accelerate cuts within weeks. Yet total enterprise AI bills are rising sharply: API spending grew from $500 million in 2023 to $8.4 billion by mid-2025. Cheaper tokens have not reduced demand. They have detonated it.
+    </div>
+    <div class="source">Sources: IntuitionLabs AI API Pricing Database (2026); AI CERTs Inference Economics Report; NavyaAI AI Cost Report 2026 | @enriqui</div>
+  </div>
+
+  <script>
+    // ── DATA ────────────────────────────────────────────────────────────────────
+    const parseDate = d3.timeParse("%Y-%m");
+
+    const series = [
+      {
+        name: "OpenAI",
+        color: "#00A8E8",
+        points: [
+          { date: "2022-11", price: 2.00,  model: "GPT-3.5 Turbo" },
+          { date: "2023-03", price: 30.00, model: "GPT-4" },
+          { date: "2023-07", price: 10.00, model: "GPT-3.5 Turbo (reduced)" },
+          { date: "2024-05", price: 2.50,  model: "GPT-4o" },
+          { date: "2024-07", price: 0.15,  model: "GPT-4o Mini" },
+          { date: "2025-04", price: 0.10,  model: "GPT-4.1 Nano" },
+          { date: "2026-02", price: 0.05,  model: "GPT-5 nano" }
+        ]
+      },
+      {
+        name: "Anthropic",
+        color: "#FF9500",
+        points: [
+          { date: "2024-03", price: 15.00, model: "Claude Opus 3" },
+          { date: "2024-06", price: 3.00,  model: "Claude Sonnet 3" },
+          { date: "2026-01", price: 3.00,  model: "Claude Sonnet 4.6" }
+        ]
+      },
+      {
+        name: "Google",
+        color: "#00C9A7",
+        points: [
+          { date: "2025-01", price: 1.25,  model: "Gemini 2.5 Pro" },
+          { date: "2025-06", price: 0.30,  model: "Gemini 2.5 Flash" },
+          { date: "2026-01", price: 0.50,  model: "Gemini 3 Flash" }
+        ]
+      },
+      {
+        name: "DeepSeek",
+        color: "#FF5C5C",
+        points: [
+          { date: "2025-01", price: 0.55,  model: "DeepSeek R1" },
+          { date: "2025-09", price: 0.028, model: "DeepSeek V3.2-Exp" }
+        ]
+      }
+    ];
+
+    series.forEach(s => s.points.forEach(p => { p.dateObj = parseDate(p.date); }));
+
+    // ── DIMENSIONS ──────────────────────────────────────────────────────────────
+    const margin = { top: 24, right: 90, bottom: 44, left: 68 };
+    const totalW  = 844; // 900px wrapper − 28px × 2 padding
+    const totalH  = 400;
+    const W = totalW - margin.left - margin.right;
+    const H = totalH - margin.top  - margin.bottom;
+
+    const svg = d3.select("#chart-container")
+      .append("svg")
+      .attr("width",  totalW)
+      .attr("height", totalH)
+      .style("display", "block");
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // ── SCALES ──────────────────────────────────────────────────────────────────
+    const xExtent = [parseDate("2022-09"), parseDate("2026-04")];
+
+    const x = d3.scaleTime().domain(xExtent).range([0, W]);
+
+    const y = d3.scaleLog()
+      .domain([0.02, 45])
+      .range([H, 0])
+      .clamp(true);
+
+    // ── GRID ────────────────────────────────────────────────────────────────────
+    const yGridTicks = [0.02, 0.05, 0.1, 0.5, 1, 5, 10, 30];
+
+    g.selectAll(".grid-h")
+      .data(yGridTicks)
+      .join("line")
+      .attr("x1", 0).attr("x2", W)
+      .attr("y1", d => y(d)).attr("y2", d => y(d))
+      .attr("stroke", "rgba(255,255,255,0.055)")
+      .attr("stroke-width", 0.5);
+
+    // ── X AXIS ──────────────────────────────────────────────────────────────────
+    g.append("g")
+      .attr("transform", `translate(0,${H})`)
+      .call(
+        d3.axisBottom(x)
+          .ticks(d3.timeMonth.every(6))
+          .tickFormat(d3.timeFormat("%b '%y"))
+          .tickSize(4)
+          .tickPadding(6)
+      )
+      .call(ax => ax.select(".domain").remove())
+      .call(ax => ax.selectAll(".tick line").attr("stroke", "rgba(255,255,255,0.12)"))
+      .selectAll("text")
+      .attr("fill", "#888888")
+      .attr("font-size", "10px");
+
+    // ── Y AXIS ──────────────────────────────────────────────────────────────────
+    g.append("g")
+      .call(
+        d3.axisLeft(y)
+          .tickValues(yGridTicks)
+          .tickFormat(d => d >= 1 ? `$${d}` : `$${d}`)
+          .tickSize(0)
+          .tickPadding(8)
+      )
+      .call(ax => ax.select(".domain").remove())
+      .selectAll("text")
+      .attr("fill", "#888888")
+      .attr("font-size", "10px");
+
+    g.append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -H / 2)
+      .attr("y", -55)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#555555")
+      .attr("font-size", "9px")
+      .attr("letter-spacing", "0.04em")
+      .text("USD PER MILLION INPUT TOKENS");
+
+    // ── ANNOTATIONS ─────────────────────────────────────────────────────────────
+    const events = [
+      { date: "2023-03", label: "GPT-4 spike\n$30 / M", labelX: 4, labelY: -8 },
+      { date: "2025-01", label: "DeepSeek\nshock", labelX: -52, labelY: -12 }
+    ];
+
+    events.forEach(ev => {
+      const xp = x(parseDate(ev.date));
+      g.append("line")
+        .attr("x1", xp).attr("x2", xp)
+        .attr("y1", 0).attr("y2", H)
+        .attr("stroke", "rgba(255,255,255,0.14)")
+        .attr("stroke-width", 0.8)
+        .attr("stroke-dasharray", "4,3");
+
+      ev.label.split("\n").forEach((line, i) => {
+        g.append("text")
+          .attr("x", xp + ev.labelX)
+          .attr("y", ev.labelY + i * 12)
+          .attr("fill", "#777777")
+          .attr("font-size", "9px")
+          .attr("text-anchor", ev.labelX < 0 ? "end" : "start")
+          .text(line);
+      });
+    });
+
+    // ── "400×" callout badge ────────────────────────────────────────────────────
+    // Arrow from Nov-2022 point to Feb-2026 point
+    const x0 = x(parseDate("2022-11"));
+    const y0 = y(2.0);
+    const x1 = x(parseDate("2026-02"));
+    const y1 = y(0.05);
+    const midX = (x0 + x1) / 2 + 20;
+    const midY = (y0 + y1) / 2 - 18;
+
+    g.append("text")
+      .attr("x", midX)
+      .attr("y", midY)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#00C9A7")
+      .attr("font-size", "11px")
+      .attr("font-weight", "700")
+      .text("400× decline");
+
+    g.append("text")
+      .attr("x", midX)
+      .attr("y", midY + 13)
+      .attr("text-anchor", "middle")
+      .attr("fill", "#555555")
+      .attr("font-size", "9px")
+      .text("Nov 2022 → Feb 2026");
+
+    // ── LINES & DOTS ────────────────────────────────────────────────────────────
+    const line = d3.line()
+      .x(d => x(d.dateObj))
+      .y(d => y(d.price))
+      .curve(d3.curveMonotoneX);
+
+    const allPoints = [];
+
+    series.forEach(s => {
+      // Line
+      g.append("path")
+        .datum(s.points)
+        .attr("fill", "none")
+        .attr("stroke", s.color)
+        .attr("stroke-width", 2)
+        .attr("stroke-linejoin", "round")
+        .attr("d", line);
+
+      // Area fill (very subtle)
+      const area = d3.area()
+        .x(d => x(d.dateObj))
+        .y0(H)
+        .y1(d => y(d.price))
+        .curve(d3.curveMonotoneX);
+
+      g.append("path")
+        .datum(s.points)
+        .attr("fill", s.color)
+        .attr("fill-opacity", 0.04)
+        .attr("d", area);
+
+      // Dots
+      g.selectAll(null)
+        .data(s.points)
+        .join("circle")
+        .attr("cx", d => x(d.dateObj))
+        .attr("cy", d => y(d.price))
+        .attr("r", 4)
+        .attr("fill", s.color)
+        .attr("stroke", "#1A1A2E")
+        .attr("stroke-width", 1.5);
+
+      // End label
+      const last = s.points[s.points.length - 1];
+      const labelY = y(last.price);
+      const nudge = { "OpenAI": 3, "Anthropic": 3, "Google": 3, "DeepSeek": 3 };
+
+      g.append("text")
+        .attr("x", x(last.dateObj) + 8)
+        .attr("y", labelY + nudge[s.name])
+        .attr("fill", s.color)
+        .attr("font-size", "11px")
+        .attr("font-weight", "700")
+        .text(s.name);
+
+      // Collect for tooltip
+      s.points.forEach(p => allPoints.push({ ...p, seriesName: s.name, color: s.color }));
+    });
+
+    // ── TOOLTIP ─────────────────────────────────────────────────────────────────
+    const tooltip = document.getElementById("tooltip");
+
+    svg.append("rect")
+      .attr("width",  totalW)
+      .attr("height", totalH)
+      .attr("fill", "transparent")
+      .style("cursor", "crosshair")
+      .on("mousemove", function(event) {
+        const [mx, my] = d3.pointer(event, this);
+        let nearest = null, minDist = Infinity;
+        allPoints.forEach(p => {
+          const px = x(p.dateObj) + margin.left;
+          const py = y(p.price)   + margin.top;
+          const d  = Math.hypot(mx - px, my - py);
+          if (d < minDist) { minDist = d; nearest = p; }
+        });
+
+        if (nearest && minDist < 36) {
+          const px = x(nearest.dateObj) + margin.left;
+          const py = y(nearest.price)   + margin.top;
+          const left = px + 14 > totalW - 200 ? px - 185 : px + 14;
+          tooltip.style.left  = left + "px";
+          tooltip.style.top   = (py - 16) + "px";
+          tooltip.style.opacity = "1";
+          tooltip.innerHTML = `
+            <span style="color:${nearest.color};font-weight:700;font-size:12px">${nearest.seriesName}</span><br>
+            <span style="color:#FFFFFF;font-size:11px">${nearest.model}</span><br>
+            <span style="color:${nearest.color};font-size:15px;font-weight:700">$${nearest.price < 1 ? nearest.price : nearest.price.toFixed(2)}</span>
+            <span style="color:#888;font-size:10px"> / M tokens</span><br>
+            <span style="color:#666;font-size:10px">${nearest.date}</span>
+          `;
+        } else {
+          tooltip.style.opacity = "0";
+        }
+      })
+      .on("mouseleave", () => { tooltip.style.opacity = "0"; });
+  </script>
+</body>
+</html>

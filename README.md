@@ -16,10 +16,15 @@ This is a personal project in data journalism — turning the day's most importa
 | 2026-03-19 | Taiwan's heat health crisis — illness rate doubles in 18 years | BMC Public Health (2025), Taiwan NHI database; Taiwan MOHW; CWA | Line chart | [View](https://linneil.github.io/daily-dataviz/2026-03-19_taiwan-heat-health-crisis/index.html) |
 | 2026-03-20 | SaaS pricing models are shifting — per-seat down, agentic-based up | OpenView Partners; Growth Unhinged; Gartner | Grouped bar | [View](https://linneil.github.io/daily-dataviz/2026-03-20_saas-agentic-pricing-shift/index.html) |
 | 2026-03-21 | Recursion Pharmaceuticals — TechBio paradigm, from $41 peak to $3 reckoning | Recursion IR; Crunchbase; MacroTrends; ARK Invest 13-F | Annotated area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-21_recursion-techbio-timeline/index.html) |
+| 2026-03-22 | The 99.7% collapse: AI token costs across frontier models, 2022–2026 | IntuitionLabs; AI CERTs; NavyaAI Cost Report | Log-scale multi-series line (D3.js) | [View](https://linneil.github.io/daily-dataviz/2026-03-22_ai-token-cost-collapse/index.html) |
 
 ---
 
 ## Stories behind the charts
+
+### 2026-03-22 — AI tokens: the 400× price collapse
+
+In November 2022, running a frontier AI model cost roughly $20 per million tokens. By February 2026, equivalent capability costs $0.05 — a 400-fold decline in under four years. The collapse was not gradual: it arrived in lurches. OpenAI's GPT-4 briefly spiked costs to $30 at launch, then efficiency gains and competition drove them down sharply. The January 2025 DeepSeek shock — open-source models priced at a fraction of incumbent rates — forced every major provider to accelerate cuts within weeks. Yet total enterprise AI bills are rising sharply: API spending grew from $500 million in 2023 to $8.4 billion by mid-2025. Cheaper tokens have not reduced demand. They have detonated it.
 
 ### 2026-03-21 — Recursion: the TechBio paradigm
 
