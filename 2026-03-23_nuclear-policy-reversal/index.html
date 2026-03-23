@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuclear Policy Reversal — 2026-03-23</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f0ede8;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 36px 20px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .chart-wrapper {
+      width: 900px;
+      background: #FFFFFF;
+      border-top: 3px solid #E3120B;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.09);
+    }
+    .chart-header {
+      padding: 22px 28px 0;
+    }
+    .rubric {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      color: #E3120B;
+      margin-bottom: 7px;
+    }
+    .title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #111111;
+      line-height: 1.25;
+      margin-bottom: 5px;
+      max-width: 680px;
+    }
+    .subtitle {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      font-style: italic;
+      color: #444444;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+    #chart {
+      padding: 0 28px;
+    }
+    .description {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 13px;
+      color: #333333;
+      line-height: 1.65;
+      padding: 16px 28px 20px;
+      border-top: 0.5px solid #EEEEEE;
+    }
+    .source {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      color: #888888;
+      padding: 10px 28px 18px;
+      border-top: 0.5px solid #DDDDDD;
+      line-height: 1.5;
+    }
+    #tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: #ffffff;
+      border: 0.5px solid #dddddd;
+      padding: 9px 12px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      color: #444;
+      display: none;
+      z-index: 100;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-width: 130px;
+    }
+    #tooltip .tt-country { font-weight: 700; font-size: 12px; color: #111; }
+    #tooltip .tt-val {
+      font-family: Georgia, serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #005F9E;
+      display: block;
+      margin: 2px 0 1px;
+    }
+    #tooltip .tt-year { color: #888; font-size: 10px; }
+  </style>
+</head>
+<body>
+
+<div id="tooltip"></div>
+
+<div class="chart-wrapper">
+  <div class="chart-header">
+    <div class="rubric">Energy Transition</div>
+    <div class="title">The great nuclear reversal</div>
+    <div class="subtitle">Nuclear share of total electricity generation, % — selected economies, 2000–2024</div>
+  </div>
+  <div id="chart"></div>
+  <div class="description">
+    For a decade after Fukushima, nuclear power appeared to be in managed retreat. Germany accelerated its phase-out, reaching zero in April 2023. Japan shuttered its entire fleet; Taiwan began a slow wind-down. Yet 2025 marked a decisive turn. Japan's 7th Strategic Energy Plan authorised new reactor construction for the first time since 2011. South Korea's left-wing president — who had campaigned as a nuclear sceptic — confirmed two new large reactors, targeting 35.2 GWe of capacity by 2038. Sweden scrapped its "100% renewables by 2040" target and approved state loans for 5,000 MWe of new-build. Germany's Merz government, while keeping its own plants off, reclassified nuclear as climate-equivalent to renewables in EU policy. China's share appears static — a statistical illusion created by explosive demand growth: with 36 reactors under construction as of March 2026, its absolute nuclear capacity will within a decade exceed any country outside France.
+  </div>
+  <div class="source">Sources: Our World in Data / Ember, Energy Institute, 2025 | @enriqui</div>
+</div>
+
+<script>
+// ── Data (embedded from cleaned_nuclear-policy-reversal_2026-03-23.csv) ────────
+const rawData = {
+  "France":        {2000:78.0,2001:77.6,2002:79.2,2003:78.9,2004:79.2,2005:79.3,2006:79.4,2007:78.3,2008:77.5,2009:77.5,2010:76.2,2011:77.9,2012:75.0,2013:73.5,2014:77.1,2015:76.2,2016:72.1,2017:71.7,2018:71.7,2019:70.6,2020:67.1,2021:68.9,2022:62.9,2023:65.4,2024:67.9},
+  "Belgium":       {2000:58.2,2001:58.9,2002:58.5,2003:56.7,2004:57.1,2005:56.4,2006:56.0,2007:55.6,2008:54.9,2009:52.6,2010:51.5,2011:54.0,2012:49.4,2013:52.0,2014:47.3,2015:38.1,2016:51.6,2017:49.5,2018:38.7,2019:47.0,2020:39.0,2021:50.6,2022:46.5,2023:40.1,2024:41.1},
+  "Finland":       {2000:32.1,2001:30.6,2002:29.8,2003:27.0,2004:26.5,2005:33.0,2006:27.8,2007:28.9,2008:29.7,2009:32.7,2010:28.3,2011:31.6,2012:32.7,2013:33.1,2014:34.6,2015:33.9,2016:33.7,2017:33.3,2018:32.5,2019:34.8,2020:33.6,2021:32.7,2022:35.1,2023:42.3,2024:39.7},
+  "Sweden":        {2000:39.5,2001:44.6,2002:46.4,2003:49.8,2004:51.1,2005:45.7,2006:46.7,2007:45.0,2008:42.6,2009:38.2,2010:39.0,2011:40.2,2012:38.5,2013:43.4,2014:42.3,2015:34.8,2016:40.5,2017:40.0,2018:42.0,2019:39.3,2020:30.0,2021:30.8,2022:30.0,2023:29.2,2024:29.5},
+  "United Kingdom":{2000:22.6,2001:23.4,2002:22.7,2003:22.3,2004:20.3,2005:20.5,2006:19.0,2007:15.9,2008:13.5,2009:18.3,2010:16.3,2011:18.7,2012:19.4,2013:19.7,2014:18.9,2015:20.8,2016:21.1,2017:20.8,2018:19.5,2019:17.2,2020:16.2,2021:15.0,2022:14.6,2023:13.9,2024:14.3},
+  "Germany":       {2000:29.8,2001:29.6,2002:28.2,2003:27.4,2004:27.4,2005:26.6,2006:26.5,2007:22.3,2008:23.5,2009:22.9,2010:22.5,2011:17.8,2012:16.0,2013:15.5,2014:15.7,2015:14.4,2016:13.2,2017:11.8,2018:12.0,2019:12.5,2020:11.4,2021:11.9,2022:6.1,2023:1.4,2024:0.0},
+  "South Korea":   {2000:37.5,2001:36.2,2002:35.9,2003:37.3,2004:35.5,2005:37.7,2006:36.9,2007:33.6,2008:34.1,2009:32.7,2010:30.0,2011:29.9,2012:28.3,2013:25.8,2014:28.9,2015:30.1,2016:28.9,2017:25.8,2018:22.5,2019:24.9,2020:27.8,2021:26.0,2022:28.3,2023:29.2,2024:30.2},
+  "Japan":         {2000:29.0,2001:29.6,2002:28.5,2003:21.1,2004:25.5,2005:25.4,2006:26.1,2007:23.6,2008:21.3,2009:24.7,2010:25.3,2011:14.8,2012:1.6,2013:1.3,2014:0.0,2015:0.4,2016:1.7,2017:2.7,2018:4.5,2019:6.3,2020:4.3,2021:5.9,2022:5.0,2023:7.7,2024:8.4},
+  "Taiwan":        {2000:20.8,2001:18.8,2002:19.9,2003:18.6,2004:18.1,2005:17.6,2006:16.9,2007:16.7,2008:17.1,2009:18.1,2010:16.9,2011:16.7,2012:16.1,2013:16.5,2014:16.3,2015:14.1,2016:12.0,2017:8.3,2018:10.0,2019:11.8,2020:11.2,2021:9.5,2022:8.2,2023:6.3,2024:4.2},
+  "China":         {2000:1.2,2001:1.2,2002:1.5,2003:2.3,2004:2.3,2005:2.1,2006:1.9,2007:1.9,2008:2.0,2009:1.9,2010:1.8,2011:1.9,2012:2.0,2013:2.1,2014:2.3,2015:2.9,2016:3.5,2017:3.8,2018:4.1,2019:4.6,2020:4.7,2021:4.8,2022:4.7,2023:4.6,2024:4.5}
+};
+
+const countryLabels = {
+  "France": "France", "Belgium": "Belgium", "Finland": "Finland",
+  "Sweden": "Sweden", "United Kingdom": "UK", "Germany": "Germany",
+  "South Korea": "S. Korea", "Japan": "Japan", "Taiwan": "Taiwan", "China": "China"
+};
+
+const euGroup    = ["France","Belgium","Finland","Sweden","United Kingdom","Germany"];
+const asiaGroup  = ["South Korea","Japan","Taiwan","China"];
+const countryOrder = [...euGroup, ...asiaGroup];
+const years = d3.range(2000, 2025);
+
+// ── Dimensions ────────────────────────────────────────────────────────────────
+const SVG_W      = 844;   // 900px wrapper - 28px*2 padding
+const ML         = 76;    // left margin for country labels
+const MR         = 88;    // right margin for legend
+const MT         = 24;    // top margin (annotation labels)
+const MB         = 32;    // bottom margin (x-axis)
+const hmW        = SVG_W - ML - MR;   // heatmap width
+const hmH        = 400;               // heatmap height
+const SVG_H      = hmH + MT + MB;
+
+const svg = d3.select("#chart")
+  .append("svg")
+  .attr("width", SVG_W)
+  .attr("height", SVG_H);
+
+const g = svg.append("g")
+  .attr("transform", `translate(${ML},${MT})`);
+
+// ── Scales ────────────────────────────────────────────────────────────────────
+const colorScale = d3.scaleSequential()
+  .domain([0, 82])
+  .interpolator(t => {
+    // Custom: white → light blue → Economist-ish dark blue
+    return d3.interpolateRgb("#F4F4F4", "#00507A")(t);
+  });
+
+const xScale = d3.scaleBand()
+  .domain(years)
+  .range([0, hmW])
+  .paddingInner(0.05)
+  .paddingOuter(0.01);
+
+const yScale = d3.scaleBand()
+  .domain(countryOrder)
+  .range([0, hmH])
+  .paddingInner(0.1)
+  .paddingOuter(0.04);
+
+// ── Separator line between EU and East Asia ───────────────────────────────────
+const euLastY   = yScale("Germany") + yScale.bandwidth();
+const asiaFirstY = yScale("South Korea");
+const sepY = euLastY + (asiaFirstY - euLastY) / 2;
+
+g.append("line")
+  .attr("x1", -ML + 4).attr("x2", hmW)
+  .attr("y1", sepY).attr("y2", sepY)
+  .attr("stroke", "#DDDDDD")
+  .attr("stroke-width", 0.8)
+  .attr("stroke-dasharray", "2,3");
+
+// ── Region labels ─────────────────────────────────────────────────────────────
+[
+  { text: "EU / UK",    y: yScale("France") - 2 },
+  { text: "EAST ASIA",  y: yScale("South Korea") - 2 }
+].forEach(({ text, y }) => {
+  g.append("text")
+    .attr("x", -ML + 4)
+    .attr("y", y)
+    .attr("font-family", "Arial, sans-serif")
+    .attr("font-size", "8px")
+    .attr("font-weight", "700")
+    .attr("letter-spacing", "0.10em")
+    .attr("fill", "#BBBBBB")
+    .text(text);
+});
+
+// ── Heat cells ────────────────────────────────────────────────────────────────
+const tooltip = d3.select("#tooltip");
+
+const flatData = countryOrder.flatMap(c =>
+  years.map(y => ({ country: c, year: y, value: rawData[c][y] ?? 0 }))
+);
+
+g.selectAll(".cell")
+  .data(flatData)
+  .join("rect")
+  .attr("class", "cell")
+  .attr("x", d => xScale(d.year))
+  .attr("y", d => yScale(d.country))
+  .attr("width", xScale.bandwidth())
+  .attr("height", yScale.bandwidth())
+  .attr("rx", 2)
+  .attr("fill", d => d.value === 0 ? "#EFEFEF" : colorScale(d.value))
+  .on("mouseover", function (event, d) {
+    d3.select(this)
+      .attr("stroke", "#333")
+      .attr("stroke-width", 1.5);
+    tooltip
+      .style("display", "block")
+      .html(`
+        <div class="tt-country">${countryLabels[d.country]}</div>
+        <span class="tt-val">${d.value.toFixed(1)}%</span>
+        <div class="tt-year">${d.year} · nuclear share of electricity</div>
+      `);
+  })
+  .on("mousemove", function (event) {
+    tooltip
+      .style("left", (event.clientX + 14) + "px")
+      .style("top",  (event.clientY - 50) + "px");
+  })
+  .on("mouseout", function () {
+    d3.select(this).attr("stroke", null);
+    tooltip.style("display", "none");
+  });
+
+// ── 2024 value labels (rightmost column) ─────────────────────────────────────
+countryOrder.forEach(c => {
+  const val = rawData[c][2024];
+  const cx = xScale(2024) + xScale.bandwidth() / 2;
+  const cy = yScale(c) + yScale.bandwidth() / 2;
+  const light = val < 30;
+  g.append("text")
+    .attr("x", cx).attr("y", cy)
+    .attr("text-anchor", "middle")
+    .attr("dominant-baseline", "central")
+    .attr("font-family", "Arial, sans-serif")
+    .attr("font-size", "9px")
+    .attr("font-weight", "700")
+    .attr("fill", light ? "#444" : "#FFFFFF")
+    .text(val.toFixed(0) + "%");
+});
+
+// ── Country labels (Y axis) ───────────────────────────────────────────────────
+g.selectAll(".country-label")
+  .data(countryOrder)
+  .join("text")
+  .attr("class", "country-label")
+  .attr("x", -8)
+  .attr("y", d => yScale(d) + yScale.bandwidth() / 2)
+  .attr("text-anchor", "end")
+  .attr("dominant-baseline", "central")
+  .attr("font-family", "Arial, Helvetica, sans-serif")
+  .attr("font-size", "12px")
+  .attr("fill", "#333333")
+  .text(d => countryLabels[d]);
+
+// ── X axis (year ticks) ───────────────────────────────────────────────────────
+const tickYears = [2000, 2005, 2010, 2015, 2020, 2024];
+g.selectAll(".x-tick")
+  .data(tickYears)
+  .join("text")
+  .attr("class", "x-tick")
+  .attr("x", y => xScale(y) + xScale.bandwidth() / 2)
+  .attr("y", hmH + 18)
+  .attr("text-anchor", "middle")
+  .attr("font-family", "Arial, sans-serif")
+  .attr("font-size", "10px")
+  .attr("fill", "#999999")
+  .text(d => d);
+
+// ── Event annotation lines ────────────────────────────────────────────────────
+const events = [
+  { year: 2011, label: "Fukushima" },
+  { year: 2023, label: "Germany exits" },
+];
+
+events.forEach(({ year, label }) => {
+  const xPos = xScale(year) + xScale.bandwidth() / 2;
+
+  g.append("line")
+    .attr("x1", xPos).attr("x2", xPos)
+    .attr("y1", 0).attr("y2", hmH)
+    .attr("stroke", "#E3120B")
+    .attr("stroke-width", 0.75)
+    .attr("stroke-dasharray", "3,3")
+    .attr("opacity", 0.65);
+
+  g.append("text")
+    .attr("x", xPos + 3)
+    .attr("y", 10)
+    .attr("font-family", "Arial, sans-serif")
+    .attr("font-size", "8.5px")
+    .attr("fill", "#E3120B")
+    .attr("opacity", 0.85)
+    .text(label);
+});
+
+// ── Colour legend ─────────────────────────────────────────────────────────────
+const lgX = hmW + 18;
+const lgY = 10;
+const lgH = hmH - 20;
+const lgW = 12;
+
+const defs = svg.append("defs");
+const grad = defs.append("linearGradient")
+  .attr("id", "lg-grad")
+  .attr("x1", "0%").attr("x2", "0%")
+  .attr("y1", "0%").attr("y2", "100%");
+
+const steps = d3.range(0, 1.01, 0.05);
+steps.forEach(t => {
+  grad.append("stop")
+    .attr("offset", `${(t * 100).toFixed(0)}%`)
+    .attr("stop-color", colorScale(82 * (1 - t)));
+});
+
+const lg = svg.append("g").attr("transform", `translate(${ML + lgX},${MT + lgY})`);
+
+lg.append("rect")
+  .attr("width", lgW).attr("height", lgH)
+  .attr("fill", "url(#lg-grad)")
+  .attr("rx", 2);
+
+const lgScale = d3.scaleLinear().domain([80, 0]).range([0, lgH]);
+[0, 20, 40, 60, 80].forEach(v => {
+  const y = lgScale(v);
+  lg.append("line")
+    .attr("x1", lgW).attr("x2", lgW + 4)
+    .attr("y1", y).attr("y2", y)
+    .attr("stroke", "#AAAAAA").attr("stroke-width", 0.5);
+  lg.append("text")
+    .attr("x", lgW + 7).attr("y", y + 3.5)
+    .attr("font-family", "Arial, sans-serif")
+    .attr("font-size", "9.5px")
+    .attr("fill", "#888888")
+    .text(v === 0 ? "0%" : v + "%");
+});
+
+lg.append("text")
+  .attr("x", lgW / 2).attr("y", -6)
+  .attr("text-anchor", "middle")
+  .attr("font-family", "Arial, sans-serif")
+  .attr("font-size", "8px")
+  .attr("fill", "#AAAAAA")
+  .text("Share");
+</script>
+</body>
+</html>

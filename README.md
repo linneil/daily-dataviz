@@ -17,10 +17,15 @@ This is a personal project in data journalism — turning the day's most importa
 | 2026-03-20 | SaaS pricing models are shifting — per-seat down, agentic-based up | OpenView Partners; Growth Unhinged; Gartner | Grouped bar | [View](https://linneil.github.io/daily-dataviz/2026-03-20_saas-agentic-pricing-shift/index.html) |
 | 2026-03-21 | Recursion Pharmaceuticals — TechBio paradigm, from $41 peak to $3 reckoning | Recursion IR; Crunchbase; MacroTrends; ARK Invest 13-F | Annotated area chart | [View](https://linneil.github.io/daily-dataviz/2026-03-21_recursion-techbio-timeline/index.html) |
 | 2026-03-22 | The 99.7% collapse: AI token costs across frontier models, 2022–2026 | IntuitionLabs; AI CERTs; NavyaAI Cost Report | Log-scale multi-series line (D3.js) | [View](https://linneil.github.io/daily-dataviz/2026-03-22_ai-token-cost-collapse/index.html) |
+| 2026-03-23 | The great nuclear reversal — EU and East Asia policy shifts, 2000–2024 | Our World in Data / Ember, Energy Institute | Heatmap (D3.js) | [View](https://linneil.github.io/daily-dataviz/2026-03-23_nuclear-policy-reversal/index.html) |
 
 ---
 
 ## Stories behind the charts
+
+### 2026-03-23 — The great nuclear reversal
+
+For a decade after Fukushima, nuclear power appeared to be in managed retreat. Germany accelerated its phase-out, reaching zero in April 2023. Japan shuttered its entire fleet; Taiwan began a slow wind-down. Yet 2025 marked a decisive turn. Japan's 7th Strategic Energy Plan authorised new reactor construction for the first time since 2011. South Korea's left-wing president — who had campaigned as a nuclear sceptic — confirmed two new large reactors, targeting 35.2 GWe of capacity by 2038. Sweden scrapped its "100% renewables by 2040" target and approved state loans for 5,000 MWe of new-build. Germany's Merz government, while keeping its own plants off, reclassified nuclear as climate-equivalent to renewables in EU policy. China's share appears static — a statistical illusion created by explosive demand growth: with 36 reactors under construction as of March 2026, its absolute nuclear capacity will within a decade exceed any country outside France.
 
 ### 2026-03-22 — AI tokens: the 400× price collapse
 
